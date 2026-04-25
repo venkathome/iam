@@ -27,6 +27,7 @@ export const typeDefs = `#graphql
     prepTime: String
     cookTime: String
     complexity: Int!
+    imageUrl: String
     createdAt: String!
   }
 

@@ -67,6 +67,21 @@ function buildGroups(recipes, sortBy) {
   }
 }
 
+function RecipeImage({ src, query, alt, className }) {
+  const finalSrc = src || `https://source.unsplash.com/featured/?${encodeURIComponent(query)}`
+  return (
+    <img
+      className={className}
+      src={finalSrc}
+      alt={alt}
+      onError={e => {
+        e.currentTarget.style.display = 'none'
+        e.currentTarget.parentElement.classList.add('img-fallback')
+      }}
+    />
+  )
+}
+
 function RecipeDetail({ id }) {
   const { data, loading } = useQuery(GET_RECIPE, { variables: { id }, skip: !id })
 
@@ -77,52 +92,74 @@ function RecipeDetail({ id }) {
   const ingredients = JSON.parse(r.ingredients || '[]')
   const instructions = JSON.parse(r.instructions || '[]')
 
+  const mainQuery = `${r.name} food dish`
+  const sideQuery1 = `${r.cuisine} cuisine cooking`
+  const sideQuery2 = `${r.category} food plated`
+
   return (
     <div className="recipe-detail">
-      <h2 className="recipe-name">{r.name}</h2>
-
-      <div className="recipe-meta">
-        <span className="meta-badge">{r.category}</span>
-        <span className="meta-badge">{r.cuisine}</span>
-        {r.servings && <span className="meta-badge">Serves {r.servings}</span>}
-        {r.prepTime && <span className="meta-badge">Prep: {r.prepTime}</span>}
-        {r.cookTime && <span className="meta-badge">Cook: {r.cookTime}</span>}
-        <span className="meta-badge complexity-badge">
-          <Stars n={r.complexity} /> {COMPLEXITY_LABELS[r.complexity]}
-        </span>
+      {/* Image mosaic hero */}
+      <div className="recipe-hero">
+        <div className="hero-main">
+          <RecipeImage src={r.imageUrl} query={mainQuery} alt={r.name} className="hero-img" />
+          <div className="hero-overlay">
+            <h2 className="recipe-name">{r.name}</h2>
+            <div className="recipe-meta">
+              <span className="meta-badge">{r.category}</span>
+              <span className="meta-badge">{r.cuisine}</span>
+              {r.servings && <span className="meta-badge">Serves {r.servings}</span>}
+              {r.prepTime && <span className="meta-badge">Prep: {r.prepTime}</span>}
+              {r.cookTime && <span className="meta-badge">Cook: {r.cookTime}</span>}
+              <span className="meta-badge complexity-badge">
+                <Stars n={r.complexity} /> {COMPLEXITY_LABELS[r.complexity]}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="hero-side">
+          <div className="hero-side-img">
+            <RecipeImage query={sideQuery1} alt={r.cuisine} className="hero-img" />
+          </div>
+          <div className="hero-side-img">
+            <RecipeImage query={sideQuery2} alt={r.category} className="hero-img" />
+          </div>
+        </div>
       </div>
 
-      <section className="recipe-section ingredients-section">
-        <h3>
-          <span className="section-icon">🧂</span> Ingredients
-          <span className="count-badge">{ingredients.length}</span>
-        </h3>
-        {ingredients.length > 0 ? (
-          <ul className="ingredients-list">
-            {ingredients.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="empty-note">See cooking steps for ingredient details.</p>
-        )}
-      </section>
+      {/* Content grid */}
+      <div className="recipe-content-grid">
+        <section className="recipe-section ingredients-section">
+          <h3>
+            <span className="section-icon">🧂</span> Ingredients
+            <span className="count-badge">{ingredients.length}</span>
+          </h3>
+          {ingredients.length > 0 ? (
+            <ul className="ingredients-list">
+              {ingredients.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-note">See cooking steps for ingredient details.</p>
+          )}
+        </section>
 
-      <section className="recipe-section instructions-section">
-        <h3>
-          <span className="section-icon">👨‍🍳</span> How to Cook
-          {instructions.length > 0 && <span className="count-badge">{instructions.length} steps</span>}
-        </h3>
-        {instructions.length > 0 ? (
-          <ol className="instructions-list">
-            {instructions.map((step, i) => (
-              <li key={i}>{step}</li>
-            ))}
-          </ol>
-        ) : (
-          <p className="empty-note">No separate cooking steps — follow the ingredient order above.</p>
-        )}
-      </section>
+        <section className="recipe-section instructions-section">
+          <h3>
+            <span className="section-icon">👨‍🍳</span> How to Cook
+            {instructions.length > 0 && <span className="count-badge">{instructions.length} steps</span>}
+          </h3>
+          {instructions.length > 0 ? (
+            <ol className="instructions-list">
+              {instructions.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          ) : (
+            <p className="empty-note">No separate cooking steps — follow the ingredient order above.</p>
+          )}
+        </section>
+      </div>
     </div>
   )
 }

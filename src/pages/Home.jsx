@@ -15,6 +15,38 @@ function RecipesIcon() {
   )
 }
 
+function FamilyTreeIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Root person */}
+      <circle cx="20" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.8"/>
+      {/* Trunk line down from root */}
+      <line x1="20" y1="11.5" x2="20" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      {/* Horizontal branch */}
+      <line x1="10" y1="18" x2="30" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      {/* Left branch down */}
+      <line x1="10" y1="18" x2="10" y2="24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      {/* Right branch down */}
+      <line x1="30" y1="18" x2="30" y2="24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      {/* Left child */}
+      <circle cx="10" cy="28" r="4" fill="none" stroke="currentColor" strokeWidth="1.6"/>
+      {/* Right child */}
+      <circle cx="30" cy="28" r="4" fill="none" stroke="currentColor" strokeWidth="1.6"/>
+      {/* Left grandchild lines */}
+      <line x1="10" y1="32" x2="10" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <line x1="7" y1="35.5" x2="13" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      {/* Right grandchild lines */}
+      <line x1="30" y1="32" x2="30" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <line x1="27" y1="35.5" x2="33" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      {/* Leaf dots */}
+      <circle cx="7" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
+      <circle cx="13" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
+      <circle cx="27" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
+      <circle cx="33" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
+    </svg>
+  )
+}
+
 export default function Home({ onNavigate }) {
   return (
     <div className="home">
@@ -25,6 +57,10 @@ export default function Home({ onNavigate }) {
         <button className="app-tile" onClick={() => onNavigate('recipes')}>
           <RecipesIcon />
           <span>Recipes</span>
+        </button>
+        <button className="app-tile app-tile-family" onClick={() => onNavigate('familyTree')}>
+          <FamilyTreeIcon />
+          <span>Family Tree</span>
         </button>
       </div>
     </div>

@@ -130,6 +130,7 @@ export const GET_RECIPE = gql`
       prepTime
       cookTime
       complexity
+      imageUrl
     }
   }
 `;
