@@ -19,6 +19,24 @@ const server = new ApolloServer({
 
 await server.start();
 
+app.get('/api/tts', cors({ origin: 'http://localhost:5173' }), async (req, res) => {
+  const { text } = req.query
+  if (!text) return res.status(400).json({ error: 'text is required' })
+
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=ta&q=${encodeURIComponent(text)}`
+  try {
+    const upstream = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' },
+    })
+    if (!upstream.ok) throw new Error(`upstream ${upstream.status}`)
+    res.set('Content-Type', 'audio/mpeg')
+    res.send(Buffer.from(await upstream.arrayBuffer()))
+  } catch (err) {
+    console.error('TTS error:', err.message)
+    res.status(502).json({ error: 'TTS unavailable' })
+  }
+})
+
 app.use(
   '/graphql',
   cors({ origin: 'http://localhost:5173' }),

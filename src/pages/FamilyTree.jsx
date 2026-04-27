@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { familyTreePeople } from '../data/familyTreeData'
+import Breadcrumb from '../components/Breadcrumb'
 import './FamilyTree.css'
 
 const peopleMap = new Map(familyTreePeople.map(p => [p.id, p]))
@@ -471,7 +472,7 @@ function RelationshipFinder({ onSelectPerson }) {
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
-export default function FamilyTree({ onBack }) {
+export default function FamilyTree() {
   const [sortBy, setSortBy] = useState('alpha')
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState(null)
@@ -505,7 +506,7 @@ export default function FamilyTree({ onBack }) {
     <div className="ft-page">
       {/* Header */}
       <header className="ft-header">
-        <button className="back-btn" onClick={onBack}>← Back</button>
+        <Breadcrumb inline />
         <h1 className="ft-title">Family Tree</h1>
         <div className="ft-search-wrapper" ref={searchRef}>
           <span className="ft-search-icon">🔍</span>

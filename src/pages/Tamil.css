@@ -1,0 +1,104 @@
+.tamil-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1.5rem 3rem;
+  position: relative;
+}
+
+.tamil-hero {
+  text-align: center;
+  padding: 4rem 0 2.5rem;
+}
+
+.tamil-title {
+  font-size: 4rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  font-family: serif;
+  color: #8b0000;
+}
+
+.tamil-subtitle {
+  font-size: 1.1rem;
+  color: #888;
+  margin: 0;
+}
+
+.tamil-apps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  justify-content: center;
+  max-width: 700px;
+  width: 100%;
+}
+
+.tamil-tile {
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  min-width: 200px;
+  flex: 1;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tamil-tile:hover {
+  border-color: #8b0000;
+  background: rgba(139, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.tamil-tile-icon {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: serif;
+  color: #8b0000;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.tamil-tile-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tamil-tile-desc {
+  font-size: 0.85rem;
+  color: #777;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: light) {
+  .tamil-tile {
+    background: #f9f9f9;
+    border-color: #e0e0e0;
+  }
+
+  .tamil-tile:hover {
+    border-color: #8b0000;
+    background: rgba(139, 0, 0, 0.05);
+  }
+
+  .tamil-tile-label {
+    color: #222;
+  }
+
+  .tamil-title {
+    color: #8b0000;
+  }
+
+  .tamil-subtitle {
+    color: #999;
+  }
+}

@@ -1,0 +1,452 @@
+.thirukkural-page {
+  min-height: 100vh;
+  background: #faf8f5;
+  padding: 0 0 60px;
+}
+
+.thirukkural-header {
+  background: linear-gradient(135deg, #8b0000 0%, #c0392b 100%);
+  color: white;
+  padding: 32px 24px 28px;
+  text-align: center;
+}
+
+.thirukkural-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.thirukkural-header .subtitle {
+  font-size: 1rem;
+  opacity: 0.85;
+  margin: 0 0 20px;
+}
+
+.thirukkural-search {
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.thirukkural-search input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.thirukkural-search input::placeholder {
+  color: #999;
+}
+
+.voice-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.voice-selector-label {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.voice-selector select {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: white;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  outline: none;
+  appearance: auto;
+  max-width: 220px;
+}
+
+.voice-selector select:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.voice-selector select option {
+  background: #8b0000;
+  color: white;
+}
+
+.thirukkural-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* Two-column layout */
+.thirukkural-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.thirukkural-nav {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+
+.thirukkural-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Book tabs — vertical in nav */
+.book-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.book-tab {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid #c0392b;
+  background: white;
+  color: #c0392b;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.book-tab:hover {
+  background: #c0392b;
+  color: white;
+}
+
+.book-tab.active {
+  background: #8b0000;
+  border-color: #8b0000;
+  color: white;
+}
+
+/* Chapter list — single column in nav */
+.chapter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 28px;
+}
+
+/* Chapter prompt (empty state) */
+.chapter-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  color: #bbb;
+  gap: 14px;
+}
+
+.chapter-prompt-icon {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ddd;
+  letter-spacing: 0.02em;
+}
+
+.chapter-btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chapter-btn:hover {
+  border-color: #c0392b;
+  background: #fff5f5;
+}
+
+.chapter-btn.active {
+  border-color: #8b0000;
+  background: #8b0000;
+  color: white;
+}
+
+.chapter-btn .ch-number {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.chapter-btn.active .ch-number {
+  opacity: 0.75;
+}
+
+.chapter-btn .ch-tamil {
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 1px;
+}
+
+.chapter-btn .ch-english {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  display: block;
+}
+
+.chapter-btn.active .ch-english {
+  opacity: 0.85;
+}
+
+/* Kural cards */
+.kural-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.kural-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e8e0d8;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.kural-card-header {
+  background: #f9f4ef;
+  border-bottom: 1px solid #e8e0d8;
+  padding: 8px 12px 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kural-play-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, #d94030 0%, #a01a1a 55%, #5e0000 100%);
+  color: white;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow:
+    0 2px 6px rgba(139, 0, 0, 0.45),
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease;
+}
+
+.kural-play-btn svg {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+.kural-play-btn:hover {
+  transform: scale(1.15);
+  box-shadow:
+    0 5px 18px rgba(192, 57, 43, 0.55),
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    0 0 0 3px rgba(192, 57, 43, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.kural-play-btn:active {
+  transform: scale(0.93);
+  box-shadow:
+    0 1px 3px rgba(139, 0, 0, 0.35),
+    inset 0 2px 5px rgba(0, 0, 0, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.kural-play-btn--playing {
+  background: linear-gradient(145deg, #b83020 0%, #8b0000 55%, #4a0000 100%);
+  box-shadow:
+    0 3px 12px rgba(139, 0, 0, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.kural-play-btn--playing:hover {
+  transform: scale(1.1);
+}
+
+.kural-play-btn--playing::before,
+.kural-play-btn--playing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(192, 57, 43, 0.65);
+  animation: kural-ripple 1.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  pointer-events: none;
+}
+
+.kural-play-btn--playing::after {
+  animation-delay: 0.9s;
+}
+
+@keyframes kural-ripple {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  100% { transform: scale(2.7); opacity: 0; }
+}
+
+.kural-play-btn--loading {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.kural-spin {
+  animation: kural-spin 0.8s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes kural-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.kural-number {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8b0000;
+  background: #fee;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.kural-card-body {
+  padding: 16px;
+}
+
+.kural-tamil {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.7;
+  margin-bottom: 8px;
+  white-space: pre-line;
+}
+
+.kural-transliteration {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  white-space: pre-line;
+}
+
+.kural-english {
+  font-size: 1rem;
+  color: #2c2c2c;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.kural-explanation {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.7;
+}
+
+.kural-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #8b0000;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.kural-toggle:hover {
+  text-decoration: underline;
+}
+
+/* Search results info */
+.search-info {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 48px 16px;
+  color: #999;
+  font-size: 1rem;
+}
+
+/* Back button */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.back-link:hover {
+  color: white;
+}
+
+@media (max-width: 700px) {
+  .thirukkural-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .thirukkural-layout {
+    flex-direction: column;
+  }
+
+  .thirukkural-nav {
+    width: 100%;
+    position: static;
+    max-height: none;
+  }
+}
