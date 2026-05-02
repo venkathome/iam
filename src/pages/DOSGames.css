@@ -1,0 +1,133 @@
+.dos-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 2rem 1rem 3rem;
+  gap: 1.5rem;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.dos-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dos-title {
+  color: #00ff41;
+  font-size: clamp(0.45rem, 1.5vw, 0.7rem);
+  line-height: 1.25;
+  margin: 0;
+  text-shadow: 0 0 12px rgba(0,255,65,0.6);
+  letter-spacing: 0.02em;
+}
+
+.dos-prompt {
+  color: #00ff41;
+  font-size: 0.9rem;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.dos-cursor {
+  animation: dos-blink 1s step-end infinite;
+}
+
+@keyframes dos-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.dos-tagline {
+  color: rgba(0,255,65,0.5);
+  font-size: 0.75rem;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+/* ── Game grid ───────────────────────────────────────────── */
+.dos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 920px;
+}
+
+/* ── Game tile ───────────────────────────────────────────── */
+.dos-tile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  background: transparent;
+  border: 1px solid rgba(0,255,65,0.45);
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.dos-tile:hover {
+  background: rgba(0,255,65,0.08);
+  border-color: #00ff41;
+  box-shadow: 0 0 14px rgba(0,255,65,0.25), inset 0 0 14px rgba(0,255,65,0.04);
+}
+
+.dos-tile-art {
+  font-size: 0.55rem;
+  line-height: 1.3;
+  margin: 0;
+  min-width: 60px;
+  opacity: 0.7;
+  flex-shrink: 0;
+  text-shadow: 0 0 6px currentColor;
+}
+
+.dos-tile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.dos-tile-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(0,255,65,0.5);
+}
+
+.dos-tile-desc {
+  font-size: 0.72rem;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.dos-footer {
+  font-size: 0.75rem;
+  opacity: 0.4;
+  letter-spacing: 0.1em;
+  margin: 0;
+  animation: dos-blink 2s step-end infinite;
+}
+
+/* Breadcrumb overrides for the DOS dark page */
+.dos-page .breadcrumb { --crumb-color: rgba(0,255,65,0.6); }
+.dos-page .crumb-link  { color: rgba(0,255,65,0.6) !important; }
+.dos-page .crumb-current { color: #00ff41 !important; }
+.dos-page .crumb-sep   { color: rgba(0,255,65,0.4) !important; }

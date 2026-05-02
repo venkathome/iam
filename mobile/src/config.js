@@ -8,3 +8,4 @@ export const SERVER_HOST = 'localhost'
 export const SERVER_PORT = 4000
 export const GRAPHQL_URL  = `http://${SERVER_HOST}:${SERVER_PORT}/graphql`
 export const TTS_URL      = `http://${SERVER_HOST}:${SERVER_PORT}/api/tts`
+export const CHAT_URL     = `http://${SERVER_HOST}:${SERVER_PORT}/api/chat`

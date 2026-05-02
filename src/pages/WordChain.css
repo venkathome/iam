@@ -1,0 +1,296 @@
+.wc-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  gap: 0.75rem;
+}
+
+.wc-page h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.wc-subtitle {
+  color: #888;
+  margin: 0;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.wc-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 540px;
+  margin-top: 0.5rem;
+}
+
+/* ── Chain history ───────────────────────────────────────── */
+.wc-chain {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  border-radius: 14px;
+  padding: 1rem 1rem 1rem 1.1rem;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.wc-chain-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wc-arrow {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.wc-word {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+  font-family: monospace;
+}
+
+.wc-chain-item--current .wc-word {
+  color: rgba(255,255,255,0.95);
+  font-size: 1.15rem;
+}
+
+.wc-word-body {
+  color: rgba(255,255,255,0.9);
+}
+
+.wc-word-last {
+  color: #22d3ee;
+  font-weight: 900;
+  font-size: 1.2rem;
+}
+
+.wc-tag {
+  font-size: 0.65rem;
+  color: #555;
+  background: #2a2a2a;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
+/* ── Panel ───────────────────────────────────────────────── */
+.wc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.wc-prompt {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wc-required-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(34,211,238,0.15);
+  border: 1.5px solid #22d3ee;
+  color: #22d3ee;
+  font-weight: 900;
+  font-size: 1.1rem;
+  font-family: monospace;
+}
+
+/* ── Timer ───────────────────────────────────────────────── */
+.wc-timer-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.wc-timer-track {
+  flex: 1;
+  height: 6px;
+  background: #2a2a2a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.wc-timer-fill {
+  height: 100%;
+  background: #22d3ee;
+  border-radius: 3px;
+  will-change: width;
+}
+
+.wc-timer-fill--urgent { background: #f87171; }
+
+.wc-timer-num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #888;
+  min-width: 24px;
+  text-align: right;
+}
+
+.wc-timer-num--urgent { color: #f87171; }
+
+/* ── Error ───────────────────────────────────────────────── */
+.wc-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #f87171;
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+}
+
+/* ── Input form ──────────────────────────────────────────── */
+.wc-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wc-input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  background: #141414;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.wc-input:focus { border-color: #22d3ee; }
+
+.wc-submit-btn {
+  padding: 0.6rem 1.2rem;
+  background: #22d3ee;
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.wc-submit-btn:hover:not(:disabled) { background: #06b6d4; }
+.wc-submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Stats row ───────────────────────────────────────────── */
+.wc-stats {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.wc-stat {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+.wc-stat strong {
+  color: rgba(255,255,255,0.75);
+}
+
+/* ── Game over ───────────────────────────────────────────── */
+.wc-over {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.wc-over-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.wc-over-score {
+  margin: 0;
+  font-size: 4rem;
+  font-weight: 900;
+  color: #22d3ee;
+  line-height: 1;
+}
+
+.wc-over-label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.wc-new-best {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.wc-over-best {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #666;
+}
+
+.wc-play-again {
+  margin-top: 0.75rem;
+  padding: 0.6rem 2rem;
+  background: #22d3ee;
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.wc-play-again:hover { background: #06b6d4; }
+
+/* ── Light mode ──────────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  .wc-chain { background: #f5f5f5; border-color: #e0e0e0; }
+  .wc-word { color: #555; }
+  .wc-chain-item--current .wc-word { color: #222; }
+  .wc-word-body { color: #333; }
+  .wc-panel { background: #f9f9f9; border-color: #e0e0e0; }
+  .wc-prompt { color: #555; }
+  .wc-input { background: #fff; border-color: #ddd; color: #222; }
+  .wc-timer-track { background: #e0e0e0; }
+  .wc-over { background: #f9f9f9; border-color: #e0e0e0; }
+  .wc-stat { color: #999; }
+  .wc-stat strong { color: #333; }
+}

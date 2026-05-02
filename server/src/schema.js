@@ -111,6 +111,7 @@ export const typeDefs = `#graphql
     deleteRecipe(id: ID!): Recipe!
 
     createProfile(firstName: String!, lastName: String, dateOfBirth: String, email: String): Profile!
+    updateProfile(id: ID!, firstName: String!, lastName: String, dateOfBirth: String, email: String): Profile!
     deleteProfile(id: ID!): Profile!
 
     addSpelling(profileId: ID!, word: String!, definition: String): Spelling!

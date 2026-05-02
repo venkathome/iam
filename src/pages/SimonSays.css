@@ -1,0 +1,126 @@
+.simon-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  gap: 1.25rem;
+}
+
+.simon-page h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.simon-stats {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.simon-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.simon-stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.simon-stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.simon-phase {
+  font-size: 1rem;
+  color: #888;
+  margin: 0;
+  min-height: 1.5rem;
+  text-align: center;
+}
+
+/* ── 2×2 button grid ─────────────────────────────────────── */
+.simon-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 0.5rem 0;
+}
+
+.simon-btn {
+  width: 148px;
+  height: 148px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
+  outline: none;
+}
+
+.simon-btn:disabled { cursor: default; }
+
+/* Dim (resting) states */
+.simon-btn--green  { background: #14532d; }
+.simon-btn--red    { background: #7f1d1d; }
+.simon-btn--yellow { background: #713f12; }
+.simon-btn--blue   { background: #1e3a8a; }
+
+/* Active (lit) states */
+.simon-btn--green.simon-btn--active  {
+  background: #22c55e;
+  transform: scale(1.07);
+  box-shadow: 0 0 32px rgba(34, 197, 94, 0.7);
+}
+.simon-btn--red.simon-btn--active    {
+  background: #ef4444;
+  transform: scale(1.07);
+  box-shadow: 0 0 32px rgba(239, 68, 68, 0.7);
+}
+.simon-btn--yellow.simon-btn--active {
+  background: #eab308;
+  transform: scale(1.07);
+  box-shadow: 0 0 32px rgba(234, 179, 8, 0.7);
+}
+.simon-btn--blue.simon-btn--active   {
+  background: #3b82f6;
+  transform: scale(1.07);
+  box-shadow: 0 0 32px rgba(59, 130, 246, 0.7);
+}
+
+/* Hover (only during input phase — button is not disabled) */
+.simon-btn--green:hover:not(:disabled):not(.simon-btn--active)  { background: #166534; }
+.simon-btn--red:hover:not(:disabled):not(.simon-btn--active)    { background: #991b1b; }
+.simon-btn--yellow:hover:not(:disabled):not(.simon-btn--active) { background: #854d0e; }
+.simon-btn--blue:hover:not(:disabled):not(.simon-btn--active)   { background: #1d4ed8; }
+
+.simon-cta {
+  margin-top: 0.5rem;
+  padding: 0.7rem 2rem;
+  background: #646cff;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.simon-cta:hover { background: #535ade; }
+
+@media (prefers-color-scheme: light) {
+  .simon-stat-value { color: #111; }
+  .simon-phase { color: #777; }
+}
+
+@media (max-width: 380px) {
+  .simon-btn { width: 130px; height: 130px; }
+}

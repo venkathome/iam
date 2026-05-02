@@ -1,0 +1,297 @@
+.kk2-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+}
+
+.kk2-page h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.kk2-subtitle {
+  color: #888;
+  margin: 0;
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 520px;
+}
+
+/* ── Difficulty picker ───────────────────────────────────── */
+.kk2-diff-grid {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.kk2-diff-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.5rem 2.5rem;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 14px;
+  cursor: pointer;
+  min-width: 140px;
+  transition: all 0.2s;
+}
+
+.kk2-diff-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+}
+.kk2-diff-btn:hover .kk2-diff-label { color: inherit; }
+
+.kk2-diff-hint {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.kk2-diff-btn--easy:hover        { border-color: #4ade80; background: rgba(74,222,128,0.07);   color: #4ade80; }
+.kk2-diff-btn--medium:hover      { border-color: #f59e0b; background: rgba(245,158,11,0.07);  color: #f59e0b; }
+.kk2-diff-btn--hard:hover        { border-color: #f87171; background: rgba(248,113,113,0.07); color: #f87171; }
+.kk2-diff-btn--very-hard:hover   { border-color: #fb923c; background: rgba(251,146,60,0.07);  color: #fb923c; }
+.kk2-diff-btn--challenging:hover { border-color: #a78bfa; background: rgba(167,139,250,0.07); color: #a78bfa; }
+.kk2-diff-btn--ultimate:hover    { border-color: #facc15; background: rgba(250,204,21,0.07);  color: #facc15; }
+
+.kk2-diff-btn--easy:hover .kk2-diff-label,
+.kk2-diff-btn--medium:hover .kk2-diff-label,
+.kk2-diff-btn--hard:hover .kk2-diff-label,
+.kk2-diff-btn--very-hard:hover .kk2-diff-label,
+.kk2-diff-btn--challenging:hover .kk2-diff-label,
+.kk2-diff-btn--ultimate:hover .kk2-diff-label { color: inherit; }
+
+/* ── Top bar ─────────────────────────────────────────────── */
+.kk2-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+.kk2-back-btn {
+  background: none;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.85rem;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.kk2-back-btn:hover { border-color: #646cff; color: #646cff; }
+
+.kk2-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+.kk2-badge--easy        { background: rgba(74,222,128,0.12);  color: #4ade80;  border: 1px solid rgba(74,222,128,0.3);  }
+.kk2-badge--medium      { background: rgba(245,158,11,0.12); color: #f59e0b;  border: 1px solid rgba(245,158,11,0.3); }
+.kk2-badge--hard        { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+.kk2-badge--very-hard   { background: rgba(251,146,60,0.12);  color: #fb923c; border: 1px solid rgba(251,146,60,0.3);  }
+.kk2-badge--challenging { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+.kk2-badge--ultimate    { background: rgba(250,204,21,0.12);  color: #facc15; border: 1px solid rgba(250,204,21,0.3);  }
+
+.kk2-timer {
+  margin-left: auto;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── Win banner ──────────────────────────────────────────── */
+.kk2-won-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 12px;
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.kk2-next-btn {
+  padding: 0.4rem 1rem;
+  background: #4ade80;
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.kk2-next-btn:hover { background: #22c55e; }
+
+/* ── Generating ──────────────────────────────────────────── */
+.kk2-generating {
+  color: #888;
+  font-size: 1rem;
+  margin-top: 2rem;
+  animation: kk2-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes kk2-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+.kk2-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 52px);
+  grid-template-rows: repeat(9, 52px);
+  border: 2.5px solid rgba(255,255,255,0.5);
+  border-radius: 6px;
+  overflow: hidden;
+  outline: none;
+}
+
+.kk2-cell {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #1e1e1e;
+  cursor: pointer;
+  transition: background 0.1s;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.kk2-cell:hover:not(.kk2-cell--selected):not(.kk2-cell--won) {
+  background: #252525;
+}
+
+.kk2-cell--selected { background: #1e3a5f !important; outline: 2px solid #3b82f6; outline-offset: -2px; }
+.kk2-cell--group    { background: #1a2a3a !important; }
+.kk2-cell--same-num { background: #1a3050 !important; }
+.kk2-cell--error    { background: rgba(248,113,113,0.12) !important; }
+.kk2-cell--won      { background: rgba(74,222,128,0.12) !important; }
+
+/* Cage sum label in top-left of leader cell */
+.kk2-cage-sum {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.kk2-digit {
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: #60a5fa;
+  line-height: 1;
+}
+
+.kk2-cell--error .kk2-digit    { color: #f87171; }
+.kk2-cell--won .kk2-digit      { color: #4ade80; }
+.kk2-cell--selected .kk2-digit { color: #93c5fd; }
+
+/* ── Controls ────────────────────────────────────────────── */
+.kk2-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+.kk2-numpad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.kk2-num-btn {
+  padding: 0.75rem 0;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: monospace;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.kk2-num-btn:hover { background: #2a2a2a; border-color: #60a5fa; color: #60a5fa; }
+
+.kk2-erase-btn { color: #f87171; font-size: 1rem; }
+.kk2-erase-btn:hover { border-color: #f87171 !important; color: #f87171 !important; }
+
+.kk2-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.kk2-action-btn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.75);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.kk2-action-btn:hover:not(:disabled) { border-color: #646cff; color: #646cff; }
+.kk2-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.kk2-hint-btn:hover:not(:disabled) { border-color: #f59e0b !important; color: #f59e0b !important; }
+
+.kk2-tip {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #555;
+  text-align: center;
+}
+
+/* ── Light mode ──────────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  .kk2-diff-btn   { background: #f5f5f5; border-color: #e0e0e0; }
+  .kk2-diff-label { color: #333; }
+  .kk2-cell       { background: #fff; }
+  .kk2-cell:hover:not(.kk2-cell--selected) { background: #f0f0f0; }
+  .kk2-cell--group    { background: #eff6ff !important; }
+  .kk2-cell--same-num { background: #dbeafe !important; }
+  .kk2-cell--selected { background: #dbeafe !important; }
+  .kk2-cage-sum   { color: #666; }
+  .kk2-digit      { color: #2563eb; }
+  .kk2-num-btn    { background: #f5f5f5; border-color: #ddd; color: #333; }
+  .kk2-action-btn { background: #f5f5f5; border-color: #ddd; color: #555; }
+  .kk2-back-btn   { border-color: #ddd; color: #888; }
+  .kk2-timer      { color: #555; }
+}

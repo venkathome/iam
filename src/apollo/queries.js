@@ -265,6 +265,19 @@ export const CREATE_PROFILE = gql`
   }
 `;
 
+export const UPDATE_PROFILE = gql`
+  mutation UpdateProfile($id: ID!, $firstName: String!, $lastName: String, $dateOfBirth: String, $email: String) {
+    updateProfile(id: $id, firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, email: $email) {
+      id
+      firstName
+      lastName
+      dateOfBirth
+      email
+      createdAt
+    }
+  }
+`;
+
 export const DELETE_PROFILE = gql`
   mutation DeleteProfile($id: ID!) {
     deleteProfile(id: $id) {

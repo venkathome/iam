@@ -1,0 +1,177 @@
+.snake-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+}
+
+.snake-title {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  margin: 0;
+  text-shadow: 0 0 16px rgba(0,255,65,0.8), 0 0 32px rgba(0,255,65,0.3);
+}
+
+/* ── Score bar ───────────────────────────────────────────── */
+.snake-scorebar {
+  display: flex;
+  gap: 2.5rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid rgba(0,255,65,0.3);
+  background: rgba(0,255,65,0.04);
+}
+
+.snake-scorebar strong {
+  color: #00ff41;
+  text-shadow: 0 0 8px rgba(0,255,65,0.5);
+}
+
+/* ── Grid wrapper ────────────────────────────────────────── */
+.snake-grid-wrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.snake-grid {
+  display: grid;
+  grid-template-columns: repeat(25, 20px);
+  grid-template-rows: repeat(25, 20px);
+  gap: 1px;
+  background: #0d0d0d;
+  border: 2px solid rgba(0,255,65,0.6);
+  box-shadow:
+    0 0 20px rgba(0,255,65,0.25),
+    inset 0 0 20px rgba(0,0,0,0.5);
+  padding: 1px;
+}
+
+/* ── Cells ───────────────────────────────────────────────── */
+.snake-cell {
+  width: 20px;
+  height: 20px;
+}
+
+.cell--empty {
+  background: #0f0f0f;
+  border: 1px solid #161616;
+}
+
+.cell--head {
+  background: #00ff41;
+  box-shadow: 0 0 8px rgba(0,255,65,0.9), 0 0 14px rgba(0,255,65,0.4);
+  border-radius: 2px;
+}
+
+.cell--body {
+  background: #00cc33;
+  box-shadow: 0 0 4px rgba(0,204,51,0.5);
+  border-radius: 1px;
+}
+
+.cell--food {
+  background: #ff4444;
+  box-shadow: 0 0 10px rgba(255,68,68,0.8), 0 0 18px rgba(255,68,68,0.3);
+  border-radius: 50%;
+  animation: food-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes food-pulse {
+  from { box-shadow: 0 0 6px rgba(255,68,68,0.6), 0 0 12px rgba(255,68,68,0.2); }
+  to   { box-shadow: 0 0 14px rgba(255,68,68,1),   0 0 24px rgba(255,68,68,0.5); }
+}
+
+/* ── Overlay ─────────────────────────────────────────────── */
+.snake-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  background: rgba(0,0,0,0.85);
+  border: 2px solid rgba(0,255,65,0.4);
+}
+
+.snake-art {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #00ff41;
+  margin: 0;
+  text-shadow: 0 0 8px rgba(0,255,65,0.6);
+}
+
+.snake-over-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  margin: 0;
+  text-shadow: 0 0 16px rgba(0,255,65,0.8);
+}
+
+.snake-over-sub {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.snake-over-score {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.snake-btn {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 1.4rem;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.snake-btn:hover {
+  background: rgba(0,255,65,0.12);
+  box-shadow: 0 0 12px rgba(0,255,65,0.3);
+}
+
+.snake-tip {
+  font-size: 0.72rem;
+  opacity: 0.5;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.snake-controls-tip {
+  font-size: 0.72rem;
+  opacity: 0.4;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* Breadcrumb overrides for dark page */
+.snake-page .breadcrumb  { --crumb-color: rgba(0,255,65,0.6); }
+.snake-page .crumb-link  { color: rgba(0,255,65,0.6) !important; }
+.snake-page .crumb-current { color: #00ff41 !important; }
+.snake-page .crumb-sep   { color: rgba(0,255,65,0.4) !important; }

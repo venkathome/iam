@@ -1,0 +1,167 @@
+.mm-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+}
+
+.mm-page h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* ── Stats bar ───────────────────────────────────────────── */
+.mm-stats {
+  display: flex;
+  gap: 2rem;
+  padding: 0.6rem 1.5rem;
+  background: #1e1e1e;
+  border: 1px solid #2e2e2e;
+  border-radius: 12px;
+}
+
+.mm-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+}
+
+.mm-stat-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+.mm-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+.mm-card {
+  aspect-ratio: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  perspective: 600px;
+}
+
+.mm-card:disabled {
+  cursor: default;
+}
+
+.mm-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform-style: preserve-3d;
+  transition: transform 0.45s ease;
+  border-radius: 10px;
+}
+
+.mm-card--face-up .mm-card-inner {
+  transform: rotateY(180deg);
+}
+
+.mm-card-front,
+.mm-card-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.mm-card-back {
+  background: #252525;
+  border: 1px solid #3a3a3a;
+  font-size: 1.5rem;
+  color: #3a3a3a;
+  font-weight: 900;
+}
+
+.mm-card:hover:not(:disabled) .mm-card-back {
+  background: #2e2e2e;
+  border-color: #555;
+}
+
+.mm-card-front {
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  font-size: 2rem;
+  transform: rotateY(180deg);
+}
+
+.mm-card--matched .mm-card-front {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: #4ade80;
+}
+
+/* ── Win screen ──────────────────────────────────────────── */
+.mm-win {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 3rem;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 16px;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.mm-win-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: #4ade80;
+}
+
+.mm-win-detail {
+  margin: 0;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.mm-btn {
+  padding: 0.6rem 1.8rem;
+  background: #4ade80;
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.25rem;
+  transition: background 0.2s;
+}
+
+.mm-btn:hover { background: #22c55e; }
+
+/* ── Light mode ──────────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  .mm-stats { background: #f5f5f5; border-color: #e0e0e0; }
+  .mm-stat  { color: #222; }
+  .mm-card-back  { background: #e8e8e8; border-color: #ccc; color: #ccc; }
+  .mm-card:hover:not(:disabled) .mm-card-back { background: #ddd; }
+  .mm-card-front { background: #f5f5f5; border-color: #ddd; }
+}

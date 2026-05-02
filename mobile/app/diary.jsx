@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import {
   View, Text, ScrollView, TextInput, Pressable, StyleSheet,
-  Modal, Alert, FlatList, SafeAreaView, KeyboardAvoidingView, Platform,
+  Modal, Alert, FlatList, SafeAreaView, KeyboardAvoidingView, Platform, TouchableOpacity,
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Ionicons } from '@expo/vector-icons'
@@ -9,15 +9,26 @@ import { StatusBar } from 'expo-status-bar'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const EVENT_TYPES = [
-  'Personal', 'Family', 'Work', 'Travel', 'Achievement',
-  'Celebration', 'Health', 'Memory', 'Milestone', 'Other',
+const DEFAULT_EVENT_TYPES = [
+  { id: 'personal',    name: 'Personal',     color: '#7c6fe0' },
+  { id: 'family',      name: 'Family',       color: '#22c55e' },
+  { id: 'work',        name: 'Work',         color: '#3b82f6' },
+  { id: 'travel',      name: 'Travel',       color: '#f97316' },
+  { id: 'achievement', name: 'Achievement',  color: '#eab308' },
+  { id: 'celebration', name: 'Celebration',  color: '#ec4899' },
+  { id: 'health',      name: 'Health',       color: '#10b981' },
+  { id: 'memory',      name: 'Memory',       color: '#a855f7' },
+  { id: 'milestone',   name: 'Milestone',    color: '#f59e0b' },
+  { id: 'other',       name: 'Other',        color: '#94a3b8' },
 ]
-const EVENT_COLORS = {
-  Personal: '#7c6fe0', Family: '#22c55e', Work: '#3b82f6', Travel: '#f97316',
-  Achievement: '#eab308', Celebration: '#ec4899', Health: '#10b981',
-  Memory: '#a855f7', Milestone: '#f59e0b', Other: '#94a3b8',
-}
+
+const COLOR_PALETTE = [
+  '#7c6fe0', '#3b82f6', '#06b6d4', '#10b981', '#22c55e',
+  '#84cc16', '#eab308', '#f97316', '#ef4444', '#ec4899',
+  '#a855f7', '#f59e0b', '#94a3b8', '#64748b', '#0ea5e9',
+  '#d946ef',
+]
+
 const MOODS = [
   { label: 'Happy', emoji: '😊' }, { label: 'Excited', emoji: '🤩' },
   { label: 'Grateful', emoji: '🙏' }, { label: 'Content', emoji: '😌' },
@@ -35,6 +46,7 @@ const SORT_OPTIONS = [
   { value: 'az',     label: 'A→Z' },    { value: 'za',     label: 'Z→A' },
 ]
 const STORAGE_KEY = 'iam-diary'
+const ET_KEY      = 'iam-diary-event-types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -87,6 +99,170 @@ function groupEntries(entries, groupBy) {
   }
   return map
 }
+
+// ── ColorPicker ───────────────────────────────────────────────────────────────
+
+function ColorPicker({ value, onChange }) {
+  return (
+    <View style={cp.grid}>
+      {COLOR_PALETTE.map(c => (
+        <Pressable
+          key={c}
+          style={[cp.swatch, { backgroundColor: c }, value === c && cp.swatchOn]}
+          onPress={() => onChange(c)}
+        />
+      ))}
+    </View>
+  )
+}
+const cp = StyleSheet.create({
+  grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  swatch:   { width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: 'transparent' },
+  swatchOn: { borderColor: '#3d1f06', transform: [{ scale: 1.15 }] },
+})
+
+// ── ManageEventTypesModal ─────────────────────────────────────────────────────
+
+function ManageEventTypesModal({ visible, eventTypes, onAdd, onEdit, onDelete, onClose }) {
+  const [editingId,    setEditingId]    = useState(null)
+  const [editName,     setEditName]     = useState('')
+  const [editColor,    setEditColor]    = useState(COLOR_PALETTE[0])
+  const [newName,      setNewName]      = useState('')
+  const [newColor,     setNewColor]     = useState(COLOR_PALETTE[0])
+  const [pendingDelId, setPendingDelId] = useState(null)
+  const delTimerRef = useRef(null)
+
+  function startEdit(et) {
+    setEditingId(et.id)
+    setEditName(et.name)
+    setEditColor(et.color)
+  }
+  function cancelEdit() { setEditingId(null) }
+  function saveEdit() {
+    const trimmed = editName.trim()
+    if (!trimmed) return
+    onEdit(editingId, trimmed, editColor)
+    setEditingId(null)
+  }
+
+  function handleAdd() {
+    const trimmed = newName.trim()
+    if (!trimmed) return
+    onAdd(trimmed, newColor)
+    setNewName('')
+    setNewColor(COLOR_PALETTE[0])
+  }
+
+  function handleDeletePress(id) {
+    if (pendingDelId === id) {
+      clearTimeout(delTimerRef.current)
+      setPendingDelId(null)
+      onDelete(id)
+    } else {
+      setPendingDelId(id)
+      delTimerRef.current = setTimeout(() => setPendingDelId(null), 2500)
+    }
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={onClose}>
+      <SafeAreaView style={mt.root}>
+        <StatusBar style="light" />
+        <View style={mt.nav}>
+          <Text style={mt.navTitle}>Event Types</Text>
+          <Pressable onPress={onClose}><Text style={mt.navDone}>Done</Text></Pressable>
+        </View>
+
+        <ScrollView style={mt.scroll} keyboardShouldPersistTaps="handled">
+          {eventTypes.map(et => (
+            <View key={et.id}>
+              {editingId === et.id ? (
+                <View style={mt.editRow}>
+                  <View style={mt.editTop}>
+                    <View style={[mt.swatch, { backgroundColor: editColor }]} />
+                    <TextInput
+                      style={mt.nameInput}
+                      value={editName}
+                      onChangeText={setEditName}
+                      autoFocus
+                      selectTextOnFocus
+                    />
+                    <Pressable style={mt.saveBtn} onPress={saveEdit}>
+                      <Text style={mt.saveBtnText}>Save</Text>
+                    </Pressable>
+                    <Pressable style={mt.cancelBtn} onPress={cancelEdit}>
+                      <Text style={mt.cancelBtnText}>✕</Text>
+                    </Pressable>
+                  </View>
+                  <ColorPicker value={editColor} onChange={setEditColor} />
+                </View>
+              ) : (
+                <View style={mt.row}>
+                  <View style={[mt.swatch, { backgroundColor: et.color }]} />
+                  <Text style={mt.rowName}>{et.name}</Text>
+                  <Pressable style={mt.iconBtn} onPress={() => startEdit(et)}>
+                    <Text style={mt.iconBtnText}>✎</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[mt.iconBtn, mt.delBtn, pendingDelId === et.id && mt.delBtnPending]}
+                    onPress={() => handleDeletePress(et.id)}
+                  >
+                    <Text style={[mt.iconBtnText, mt.delBtnText]}>
+                      {pendingDelId === et.id ? 'Confirm' : '🗑'}
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          ))}
+
+          <View style={mt.divider} />
+          <Text style={mt.addTitle}>Add Event Type</Text>
+          <View style={mt.addTop}>
+            <View style={[mt.swatch, { backgroundColor: newColor }]} />
+            <TextInput
+              style={mt.nameInput}
+              placeholder="Type name…"
+              placeholderTextColor="#b09060"
+              value={newName}
+              onChangeText={setNewName}
+            />
+            <Pressable style={mt.saveBtn} onPress={handleAdd}>
+              <Text style={mt.saveBtnText}>Add</Text>
+            </Pressable>
+          </View>
+          <ColorPicker value={newColor} onChange={setNewColor} />
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  )
+}
+const mt = StyleSheet.create({
+  root:           { flex: 1, backgroundColor: '#faf7f2' },
+  nav:            { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#e8dcc8' },
+  navTitle:       { color: '#3d1f06', fontSize: 17, fontWeight: '700' },
+  navDone:        { color: '#c47a20', fontSize: 16, fontWeight: '600' },
+  scroll:         { flex: 1, padding: 16 },
+  row:            { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f0e8d8' },
+  swatch:         { width: 14, height: 14, borderRadius: 7, flexShrink: 0 },
+  rowName:        { flex: 1, color: '#3d1f06', fontSize: 15 },
+  iconBtn:        { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: '#f0e8d8' },
+  iconBtnText:    { color: '#c47a20', fontSize: 13, fontWeight: '600' },
+  delBtn:         { backgroundColor: 'rgba(239,68,68,0.1)' },
+  delBtnText:     { color: '#ef4444' },
+  delBtnPending:  { backgroundColor: '#ef4444' },
+  editRow:        { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f0e8d8' },
+  editTop:        { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  addTop:         { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  nameInput:      { flex: 1, backgroundColor: '#f0e8d8', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7, color: '#3d1f06', fontSize: 14, borderWidth: 1, borderColor: '#e8dcc8' },
+  saveBtn:        { backgroundColor: '#c47a20', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7 },
+  saveBtnText:    { color: '#fff', fontWeight: '700', fontSize: 13 },
+  cancelBtn:      { backgroundColor: '#f0e8d8', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 },
+  cancelBtnText:  { color: '#a07840', fontSize: 13, fontWeight: '700' },
+  divider:        { height: 1, backgroundColor: '#e8dcc8', marginVertical: 16 },
+  addTitle:       { color: '#a07840', fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
+})
 
 // ── StatsBar ──────────────────────────────────────────────────────────────────
 
@@ -148,7 +324,7 @@ const sb = StyleSheet.create({
 
 const BLANK = { title: '', content: '', date: todayStr(), time: '', eventType: 'Personal', mood: 'Neutral', people: '', location: '', tags: '', isFavorite: false }
 
-function EntryForm({ initial, onSave, onCancel }) {
+function EntryForm({ initial, eventTypes, colorMap, onSave, onCancel }) {
   const [form, setForm] = useState(() => ({
     ...BLANK,
     ...(initial ?? {}),
@@ -201,6 +377,7 @@ function EntryForm({ initial, onSave, onCancel }) {
               <Pressable style={[ef.fieldHalf, { flex: 1 }]} onPress={() => setShowTypePicker(true)}>
                 <Text style={ef.label}>Event Type</Text>
                 <View style={[ef.input, ef.pickerRow]}>
+                  <View style={[ef.typeColorDot, { backgroundColor: colorMap[form.eventType] || '#94a3b8' }]} />
                   <Text style={ef.pickerText}>{form.eventType}</Text>
                   <Ionicons name="chevron-down" size={14} color="#a07840" />
                 </View>
@@ -269,11 +446,11 @@ function EntryForm({ initial, onSave, onCancel }) {
                   <Text style={ef.pickerNavDone}>Done</Text>
                 </Pressable>
               </View>
-              {EVENT_TYPES.map(t => (
-                <Pressable key={t} style={ef.pickerItem} onPress={() => { set('eventType', t); setShowTypePicker(false) }}>
-                  <View style={[ef.typeColor, { backgroundColor: EVENT_COLORS[t] }]} />
-                  <Text style={[ef.pickerItemText, form.eventType === t && { color: '#c47a20' }]}>{t}</Text>
-                  {form.eventType === t && <Ionicons name="checkmark" size={16} color="#c47a20" />}
+              {eventTypes.map(et => (
+                <Pressable key={et.id} style={ef.pickerItem} onPress={() => { set('eventType', et.name); setShowTypePicker(false) }}>
+                  <View style={[ef.typeColor, { backgroundColor: et.color }]} />
+                  <Text style={[ef.pickerItemText, form.eventType === et.name && { color: '#c47a20' }]}>{et.name}</Text>
+                  {form.eventType === et.name && <Ionicons name="checkmark" size={16} color="#c47a20" />}
                 </Pressable>
               ))}
             </View>
@@ -295,8 +472,9 @@ const ef = StyleSheet.create({
   fieldHalf:     { flex: 1 },
   label:         { color: '#a07840', fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
   input:         { backgroundColor: '#f0e8d8', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, color: '#3d1f06', fontSize: 14, borderWidth: 1, borderColor: '#e8dcc8' },
-  pickerRow:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pickerText:    { color: '#3d1f06', fontSize: 14 },
+  pickerRow:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pickerText:    { flex: 1, color: '#3d1f06', fontSize: 14 },
+  typeColorDot:  { width: 8, height: 8, borderRadius: 4 },
   moodRow:       { flexDirection: 'row', gap: 8, paddingBottom: 4 },
   moodBtn:       { alignItems: 'center', padding: 8, borderRadius: 10, backgroundColor: '#f0e8d8', borderWidth: 1, borderColor: '#e8dcc8', minWidth: 60 },
   moodBtnOn:     { backgroundColor: 'rgba(196,122,32,0.15)', borderColor: '#c47a20' },
@@ -319,11 +497,11 @@ const ef = StyleSheet.create({
 
 // ── EntryCard ─────────────────────────────────────────────────────────────────
 
-function EntryCard({ entry, onEdit, onDelete, onToggleFav }) {
+function EntryCard({ entry, colorMap, onEdit, onDelete, onToggleFav }) {
   const [expanded, setExpanded] = useState(false)
   const people = parseTags(entry.people)
   const tags   = parseTags(entry.tags)
-  const color  = EVENT_COLORS[entry.eventType] || EVENT_COLORS.Other
+  const color  = colorMap[entry.eventType] || '#94a3b8'
 
   return (
     <View style={[ec.card, { borderLeftColor: color }]}>
@@ -338,7 +516,7 @@ function EntryCard({ entry, onEdit, onDelete, onToggleFav }) {
 
         <View style={ec.titleRow}>
           <Text style={ec.title}>{entry.title}</Text>
-          <Pressable onPress={e => onToggleFav(entry.id)} hitSlop={8}>
+          <Pressable onPress={() => onToggleFav(entry.id)} hitSlop={8}>
             <Text style={[ec.fav, entry.isFavorite && ec.favOn]}>{entry.isFavorite ? '★' : '☆'}</Text>
           </Pressable>
         </View>
@@ -420,27 +598,62 @@ const ec = StyleSheet.create({
 // ── Main Diary ────────────────────────────────────────────────────────────────
 
 export default function DiaryScreen() {
-  const [entries,    setEntries]    = useState([])
-  const [showForm,   setShowForm]   = useState(false)
-  const [editing,    setEditing]    = useState(null)
-  const [groupBy,    setGroupBy]    = useState('month')
-  const [sortOrder,  setSortOrder]  = useState('newest')
-  const [search,     setSearch]     = useState('')
-  const [filterType, setFilterType] = useState('')
-  const [filterMood, setFilterMood] = useState('')
-  const [filterFavs, setFilterFavs] = useState(false)
-  const [showGroupPicker, setShowGroupPicker] = useState(false)
-  const [showSortPicker,  setShowSortPicker]  = useState(false)
+  const [entries,        setEntries]        = useState([])
+  const [eventTypes,     setEventTypes]     = useState(DEFAULT_EVENT_TYPES)
+  const [showForm,       setShowForm]       = useState(false)
+  const [editing,        setEditing]        = useState(null)
+  const [showManageTypes,setShowManageTypes] = useState(false)
+  const [groupBy,        setGroupBy]        = useState('month')
+  const [sortOrder,      setSortOrder]      = useState('newest')
+  const [search,         setSearch]         = useState('')
+  const [filterType,     setFilterType]     = useState('')
+  const [filterMood,     setFilterMood]     = useState('')
+  const [filterFavs,     setFilterFavs]     = useState(false)
+  const [showGroupPicker,setShowGroupPicker] = useState(false)
+  const [showSortPicker, setShowSortPicker]  = useState(false)
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then(raw => {
       if (raw) try { setEntries(JSON.parse(raw)) } catch {}
+    })
+    AsyncStorage.getItem(ET_KEY).then(raw => {
+      if (raw) try { setEventTypes(JSON.parse(raw)) } catch {}
     })
   }, [])
 
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
   }, [entries])
+
+  useEffect(() => {
+    AsyncStorage.setItem(ET_KEY, JSON.stringify(eventTypes))
+  }, [eventTypes])
+
+  const colorMap = useMemo(() => {
+    const m = {}
+    for (const et of eventTypes) m[et.name] = et.color
+    return m
+  }, [eventTypes])
+
+  function addEventType(name, color) {
+    if (eventTypes.some(et => et.name.toLowerCase() === name.toLowerCase())) return
+    setEventTypes(prev => [...prev, { id: uid(), name, color }])
+  }
+
+  function editEventType(id, name, color) {
+    const old = eventTypes.find(et => et.id === id)
+    setEventTypes(prev => prev.map(et => et.id === id ? { ...et, name, color } : et))
+    if (old && old.name !== name) {
+      setEntries(prev => prev.map(e => e.eventType === old.name ? { ...e, eventType: name } : e))
+      if (filterType === old.name) setFilterType(name)
+    }
+  }
+
+  function deleteEventType(id) {
+    const et = eventTypes.find(t => t.id === id)
+    setEventTypes(prev => prev.filter(t => t.id !== id))
+    if (et && filterType === et.name) setFilterType('')
+  }
 
   function openNew()        { setEditing(null); setShowForm(true) }
   function openEdit(entry)  { setEditing(entry); setShowForm(true) }
@@ -485,7 +698,6 @@ export default function DiaryScreen() {
   const groupLabel = GROUP_OPTIONS.find(o => o.value === groupBy)?.label ?? ''
   const sortLabel  = SORT_OPTIONS.find(o => o.value === sortOrder)?.label ?? ''
 
-  // Build sections array for FlatList
   const sections = useMemo(() => {
     const arr = []
     for (const [key, items] of groups.entries()) {
@@ -542,16 +754,20 @@ export default function DiaryScreen() {
 
       {/* Filter chips */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filtersScroll} contentContainerStyle={s.filtersContent}>
+        <Pressable style={[s.fchip, s.fchipManage]} onPress={() => setShowManageTypes(true)}>
+          <Text style={[s.fchipText, s.fchipManageText]}>⚙ Types</Text>
+        </Pressable>
         <Pressable style={[s.fchip, filterFavs && s.fchipOn]} onPress={() => setFilterFavs(v => !v)}>
           <Text style={[s.fchipText, filterFavs && s.fchipTextOn]}>★ Favs</Text>
         </Pressable>
-        {EVENT_TYPES.map(t => (
+        {eventTypes.map(et => (
           <Pressable
-            key={t}
-            style={[s.fchip, filterType === t && { borderColor: EVENT_COLORS[t], backgroundColor: EVENT_COLORS[t] + '20' }]}
-            onPress={() => setFilterType(v => v === t ? '' : t)}
+            key={et.id}
+            style={[s.fchip, filterType === et.name && { borderColor: et.color, backgroundColor: et.color + '20' }]}
+            onPress={() => setFilterType(v => v === et.name ? '' : et.name)}
           >
-            <Text style={[s.fchipText, filterType === t && { color: EVENT_COLORS[t] }]}>{t}</Text>
+            <View style={[s.fchipDot, { backgroundColor: et.color }]} />
+            <Text style={[s.fchipText, filterType === et.name && { color: et.color }]}>{et.name}</Text>
           </Pressable>
         ))}
         {MOODS.map(m => (
@@ -599,6 +815,7 @@ export default function DiaryScreen() {
               <View style={s.cardWrapper}>
                 <EntryCard
                   entry={item.entry}
+                  colorMap={colorMap}
                   onEdit={openEdit}
                   onDelete={deleteEntry}
                   onToggleFav={toggleFav}
@@ -615,8 +832,26 @@ export default function DiaryScreen() {
         <Text style={s.fabText}>＋</Text>
       </Pressable>
 
-      {/* Form */}
-      {showForm && <EntryForm initial={editing} onSave={editing ? updateEntry : addEntry} onCancel={closeForm} />}
+      {/* Entry Form */}
+      {showForm && (
+        <EntryForm
+          initial={editing}
+          eventTypes={eventTypes}
+          colorMap={colorMap}
+          onSave={editing ? updateEntry : addEntry}
+          onCancel={closeForm}
+        />
+      )}
+
+      {/* Manage Event Types */}
+      <ManageEventTypesModal
+        visible={showManageTypes}
+        eventTypes={eventTypes}
+        onAdd={addEventType}
+        onEdit={editEventType}
+        onDelete={deleteEventType}
+        onClose={() => setShowManageTypes(false)}
+      />
 
       {/* Group picker */}
       <Modal visible={showGroupPicker} transparent animationType="slide" onRequestClose={() => setShowGroupPicker(false)}>
@@ -672,10 +907,13 @@ const s = StyleSheet.create({
   selBtnText:    { color: '#7a5030', fontSize: 12, fontWeight: '600' },
   filtersScroll: { flexGrow: 0, marginBottom: 8 },
   filtersContent:{ paddingHorizontal: 12, gap: 6, alignItems: 'center' },
-  fchip:         { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: '#f0e8d8', borderWidth: 1, borderColor: '#e8dcc8' },
+  fchip:         { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: '#f0e8d8', borderWidth: 1, borderColor: '#e8dcc8' },
   fchipOn:       { backgroundColor: 'rgba(196,122,32,0.15)', borderColor: '#c47a20' },
+  fchipManage:   { backgroundColor: 'rgba(196,122,32,0.12)', borderColor: '#c47a2066' },
+  fchipManageText:{ color: '#c47a20', fontWeight: '600' },
   fchipText:     { color: '#a07840', fontSize: 12 },
   fchipTextOn:   { color: '#c47a20', fontWeight: '600' },
+  fchipDot:      { width: 7, height: 7, borderRadius: 4 },
   groupHeader:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, paddingTop: 16 },
   groupName:     { color: '#c47a20', fontSize: 15, fontWeight: '700' },
   groupCount:    { color: '#a07840', fontSize: 12 },

@@ -1,0 +1,158 @@
+.pong-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+}
+
+.pong-title {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  margin: 0;
+  text-shadow: 0 0 16px rgba(0,255,65,0.8), 0 0 32px rgba(0,255,65,0.3);
+}
+
+/* ── Mode bar ────────────────────────────────────────────── */
+.pong-mode-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pong-mode-btn {
+  background: transparent;
+  border: 1px solid rgba(0,255,65,0.4);
+  color: rgba(0,255,65,0.6);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  padding: 0.35rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.pong-mode-btn:hover,
+.pong-mode-btn--active {
+  background: rgba(0,255,65,0.1);
+  border-color: #00ff41;
+  color: #00ff41;
+}
+
+/* ── Canvas wrap ─────────────────────────────────────────── */
+.pong-wrap {
+  position: relative;
+  line-height: 0;
+}
+
+.pong-canvas {
+  display: block;
+  border: 2px solid rgba(0,255,65,0.5);
+  box-shadow: 0 0 24px rgba(0,255,65,0.2);
+}
+
+/* ── Overlay ─────────────────────────────────────────────── */
+.pong-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(0,0,0,0.82);
+  border: 2px solid rgba(0,255,65,0.35);
+}
+
+.pong-over-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin: 0;
+  color: #00ff41;
+  text-shadow: 0 0 20px rgba(0,255,65,0.9);
+}
+
+.pong-btn {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  padding: 0.5rem 1.6rem;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.pong-btn:hover {
+  background: rgba(0,255,65,0.12);
+  box-shadow: 0 0 12px rgba(0,255,65,0.3);
+}
+
+.pong-tip {
+  font-size: 0.7rem;
+  opacity: 0.45;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+/* ── Scoreboard ──────────────────────────────────────────── */
+.pong-scoreboard {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.5rem 2rem;
+  border: 1px solid rgba(0,255,65,0.3);
+  background: rgba(0,255,65,0.04);
+}
+
+.pong-score-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.pong-score-label {
+  font-size: 0.65rem;
+  opacity: 0.5;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.pong-score-val {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0,255,65,0.6);
+}
+
+.pong-score-sep {
+  font-size: 1.4rem;
+  opacity: 0.4;
+}
+
+.pong-target {
+  font-size: 0.7rem;
+  opacity: 0.35;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+/* Breadcrumb overrides */
+.pong-page .breadcrumb    { --crumb-color: rgba(0,255,65,0.6); }
+.pong-page .crumb-link    { color: rgba(0,255,65,0.6) !important; }
+.pong-page .crumb-current { color: #00ff41 !important; }
+.pong-page .crumb-sep     { color: rgba(0,255,65,0.4) !important; }

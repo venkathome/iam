@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View, Text, TextInput, FlatList, Pressable, StyleSheet,
   SafeAreaView, ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
@@ -11,6 +11,7 @@ import {
   INCREMENT_SPELT_COUNT, DECREMENT_SPELT_COUNT,
   TOGGLE_REVISION, DELETE_SPELLING,
 } from '../../../src/apollo/queries'
+import { useNotify } from '../../../src/context/NotificationContext'
 
 async function validateWord(word) {
   try {
@@ -161,16 +162,13 @@ const wr = StyleSheet.create({
 
 export default function SpellingsScreen() {
   const { profileId } = useLocalSearchParams()
+  const notify = useNotify()
   const [addInput,      setAddInput]      = useState('')
-  const [addStatus,     setAddStatus]     = useState(null)
   const [isAdding,      setIsAdding]      = useState(false)
   const [searchInput,   setSearchInput]   = useState('')
   const [activeFilter,  setActiveFilter]  = useState('all')
   const [expandedId,    setExpandedId]    = useState(null)
-  const [confirmingDel, setConfirmingDel] = useState(null)
-  const confirmTimer = useRef(null)
-
-  useEffect(() => () => clearTimeout(confirmTimer.current), [])
+  const [deletedIds, setDeletedIds] = useState(new Set())
 
   const { data: allData,    loading: allLoading    } = useQuery(GET_SPELLINGS, { variables: { profileId }, skip: !profileId })
   const { data: searchData, loading: searchLoading } = useQuery(SEARCH_SPELLINGS, {
@@ -185,7 +183,7 @@ export default function SpellingsScreen() {
 
   const allWords  = (allData?.spellings ?? []).map(s => s.word)
   const baseWords = searchInput.trim() ? (searchData?.searchSpellings ?? []) : (allData?.spellings ?? [])
-  const displayed = activeFilter === 'revision' ? baseWords.filter(w => w.needsRevision) : baseWords
+  const displayed = (activeFilter === 'revision' ? baseWords.filter(w => w.needsRevision) : baseWords).filter(w => !deletedIds.has(w.id))
   const loading   = searchInput.trim() ? searchLoading : allLoading
   const revCount  = (allData?.spellings ?? []).filter(w => w.needsRevision).length
 
@@ -200,20 +198,20 @@ export default function SpellingsScreen() {
     const word = addInput.trim().toLowerCase()
     if (!word) return
     if (allData?.spellings?.some(s => s.word === word)) {
-      setAddStatus({ type: 'error', message: `"${word}" is already in your list.` }); return
+      notify.error(`"${word}" is already in your list.`); return
     }
-    setIsAdding(true); setAddStatus(null)
+    setIsAdding(true)
     const definition = await validateWord(word)
     if (definition === null) {
-      setAddStatus({ type: 'error', message: `"${word}" was not found in the English dictionary.` })
+      notify.error(`"${word}" was not found in the English dictionary.`)
       setIsAdding(false); return
     }
     try {
       await addSpelling({ variables: { profileId, word, definition }, refetchQueries: getRefetchQueries() })
-      setAddStatus({ type: 'success', message: `"${word}" added successfully.` })
+      notify.success(`"${word}" added successfully.`)
       setAddInput('')
     } catch (err) {
-      setAddStatus({ type: 'error', message: err.message?.includes('Unique') ? `"${word}" already added.` : 'Failed to add word.' })
+      notify.error(err.message?.includes('Unique') ? `"${word}" already added.` : 'Failed to add word.')
     } finally { setIsAdding(false) }
   }
 
@@ -231,15 +229,8 @@ export default function SpellingsScreen() {
   function handleRevision(id)  { toggleRevision({ variables: { id }, refetchQueries: getRefetchQueries() }) }
 
   function handleDelete(id) {
-    if (confirmingDel === id) {
-      clearTimeout(confirmTimer.current)
-      setConfirmingDel(null)
-      deleteSpelling({ variables: { id }, refetchQueries: getRefetchQueries() })
-    } else {
-      setConfirmingDel(id)
-      clearTimeout(confirmTimer.current)
-      confirmTimer.current = setTimeout(() => setConfirmingDel(null), 2000)
-    }
+    setDeletedIds(prev => new Set([...prev, id]))
+    deleteSpelling({ variables: { id }, refetchQueries: getRefetchQueries() })
   }
 
   function toggleExpand(id) { setExpandedId(v => v === id ? null : id) }
@@ -254,7 +245,7 @@ export default function SpellingsScreen() {
             placeholder="Add a word…"
             placeholderTextColor="#555"
             value={addInput}
-            onChangeText={v => { setAddInput(v); setAddStatus(null) }}
+            onChangeText={setAddInput}
             onSubmitEditing={handleAdd}
             autoCapitalize="none"
             returnKeyType="done"
@@ -264,12 +255,6 @@ export default function SpellingsScreen() {
             <Text style={s.addBtnText}>{isAdding ? '…' : 'Add'}</Text>
           </Pressable>
         </View>
-
-        {addStatus && (
-          <Text style={[s.statusMsg, addStatus.type === 'error' ? s.statusError : s.statusSuccess]}>
-            {addStatus.message}
-          </Text>
-        )}
 
         {/* Search */}
         <View style={s.searchRow}>
@@ -355,9 +340,6 @@ const s = StyleSheet.create({
   addBtn:           { backgroundColor: '#646cff', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 11, justifyContent: 'center' },
   addBtnDis:        { opacity: 0.4 },
   addBtnText:       { color: '#fff', fontWeight: '700', fontSize: 15 },
-  statusMsg:        { marginHorizontal: 12, marginBottom: 6, padding: 10, borderRadius: 8, fontSize: 13 },
-  statusError:      { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' },
-  statusSuccess:    { backgroundColor: 'rgba(74,222,128,0.1)', color: '#4ade80' },
   searchRow:        { flexDirection: 'row', alignItems: 'center', marginHorizontal: 12, marginBottom: 8, backgroundColor: '#1a1a1a', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   searchInput:      { flex: 1, color: '#fff', fontSize: 14 },
   filterRow:        { flexDirection: 'row', gap: 8, paddingHorizontal: 12, marginBottom: 6 },

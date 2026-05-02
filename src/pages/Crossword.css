@@ -1,0 +1,208 @@
+.crossword-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+}
+
+.crossword-page h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* ── Puzzle tabs ─────────────────────────────────────────── */
+.cw-puzzle-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cw-tab {
+  padding: 0.35rem 0.9rem;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.cw-tab:hover { border-color: #646cff; color: #646cff; }
+.cw-tab--active { border-color: #646cff; color: #646cff; background: rgba(100,108,255,0.1); }
+
+/* ── Win banner ──────────────────────────────────────────── */
+.cw-win-banner {
+  background: rgba(74,222,128,0.12);
+  border: 1px solid rgba(74,222,128,0.3);
+  color: #4ade80;
+  border-radius: 10px;
+  padding: 0.6rem 1.5rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.cw-layout {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+.cw-grid-wrap {
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid #3a3a3a;
+}
+
+.cw-grid {
+  display: grid;
+  gap: 0;
+}
+
+.cw-cell {
+  width: 56px;
+  height: 56px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid #3a3a3a;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cw-cell--black {
+  background: #111;
+  cursor: default;
+}
+
+.cw-cell--white {
+  background: #1e1e1e;
+  transition: background 0.1s;
+}
+
+.cw-cell--white:hover { background: #2a2a2a; }
+.cw-cell--inword      { background: rgba(100,108,255,0.1); }
+.cw-cell--selected    { background: rgba(100,108,255,0.35) !important; }
+.cw-cell--wrong       { background: rgba(248,113,113,0.2) !important; }
+.cw-cell--won         { background: rgba(74,222,128,0.15) !important; }
+
+.cw-num {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  line-height: 1;
+}
+
+.cw-letter {
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: rgba(255,255,255,0.9);
+  text-transform: uppercase;
+}
+
+/* ── Clues panel ─────────────────────────────────────────── */
+.cw-clues {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 200px;
+  max-width: 260px;
+}
+
+.cw-clue-group h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #646cff;
+}
+
+.cw-clue-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cw-clue-item:hover { background: rgba(100,108,255,0.1); }
+
+.cw-clue-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #646cff;
+  min-width: 16px;
+}
+
+.cw-clue-text {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.4;
+}
+
+/* ── Action buttons ──────────────────────────────────────── */
+.cw-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.cw-btn {
+  padding: 0.5rem 1.4rem;
+  background: #646cff;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cw-btn:hover:not(:disabled) { background: #535ade; }
+.cw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.cw-btn--reveal {
+  background: #3a3a3a;
+  color: rgba(255,255,255,0.7);
+}
+
+.cw-btn--reveal:hover:not(:disabled) { background: #4a4a4a; color: #fff; }
+
+.cw-tip {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #555;
+  text-align: center;
+}
+
+/* ── Light mode ──────────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  .cw-tab { background: #f5f5f5; border-color: #ddd; color: #666; }
+  .cw-cell--white { background: #fff; border-color: #ccc; }
+  .cw-cell--black { background: #222; }
+  .cw-cell--white:hover { background: #f0f0f0; }
+  .cw-letter { color: #222; }
+  .cw-num { color: #777; }
+  .cw-clue-text { color: #444; }
+}

@@ -1,0 +1,184 @@
+.g2048-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  gap: 0.75rem;
+}
+
+.g2048-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 340px;
+}
+
+.g2048-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  margin: 0;
+  color: #edc22e;
+  letter-spacing: -1px;
+}
+
+.g2048-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.g2048-scores {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.g2048-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #3c3a32;
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  min-width: 64px;
+}
+
+.g2048-score span {
+  font-size: 0.65rem;
+  color: #ccc0b3;
+  letter-spacing: 0.05em;
+}
+
+.g2048-score strong {
+  font-size: 1.1rem;
+  color: #f9f6f2;
+}
+
+.g2048-new-btn {
+  padding: 0.45rem 1.2rem;
+  background: #8f7a66;
+  border: none;
+  border-radius: 6px;
+  color: #f9f6f2;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.g2048-new-btn:hover { background: #7a6858; }
+
+/* ── Board ───────────────────────────────────────────────── */
+.g2048-board-wrap {
+  position: relative;
+}
+
+.g2048-board {
+  display: grid;
+  grid-template-columns: repeat(4, 76px);
+  grid-template-rows: repeat(4, 76px);
+  gap: 8px;
+  background: #bbada0;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.g2048-cell {
+  width: 76px;
+  height: 76px;
+  border-radius: 6px;
+  background: rgba(238,228,218,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.g2048-cell--filled {
+  transition: background 0.1s;
+}
+
+.g2048-cell span {
+  font-weight: 900;
+  font-family: Arial, sans-serif;
+  line-height: 1;
+}
+
+/* ── Overlay ─────────────────────────────────────────────── */
+.g2048-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  backdrop-filter: blur(2px);
+}
+
+.g2048-overlay--won  { background: rgba(237,194,46,0.85); }
+.g2048-overlay--over { background: rgba(30,30,30,0.88); }
+
+.g2048-overlay p {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.g2048-final-score {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  opacity: 0.85;
+}
+
+.g2048-overlay-btns {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.g2048-overlay button, .g2048-overlay-btns button {
+  padding: 0.5rem 1.1rem;
+  background: #8f7a66;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.g2048-overlay button:hover { background: #7a6858; }
+
+/* ── On-screen controls ──────────────────────────────────── */
+.g2048-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.g2048-ctrl-row {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.g2048-ctrl {
+  width: 48px;
+  height: 48px;
+  background: #3c3a32;
+  border: none;
+  border-radius: 8px;
+  color: #f9f6f2;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.g2048-ctrl:hover { background: #554f46; }
+
+@media (prefers-color-scheme: light) {
+  .g2048-hint { color: #999; }
+}

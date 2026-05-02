@@ -7,6 +7,7 @@ import {
   TOGGLE_REVISION, DELETE_SPELLING,
 } from '../apollo/queries'
 import Breadcrumb from '../components/Breadcrumb'
+import { useNotify } from '../context/NotificationContext'
 import './Spellings.css'
 
 async function validateEnglishWord(word) {
@@ -224,10 +225,10 @@ function WordActions({ spelling, onIncrement, onDecrement, onRevision, onMeaning
 
 export default function Spellings() {
   const { profileId } = useParams()
+  const notify = useNotify()
 
   const [searchInput, setSearchInput] = useState('')
   const [addInput, setAddInput] = useState('')
-  const [addStatus, setAddStatus] = useState(null)
   const [isAdding, setIsAdding] = useState(false)
   const [showAutocomplete, setShowAutocomplete] = useState(false)
   const [expandedACMeaning, setExpandedACMeaning] = useState(null)
@@ -290,29 +291,28 @@ export default function Spellings() {
 
     const alreadyExists = allData?.spellings?.some(s => s.word === word)
     if (alreadyExists) {
-      setAddStatus({ type: 'error', message: `"${word}" has already been added.` })
+      notify.error(`"${word}" has already been added.`)
       return
     }
 
     setIsAdding(true)
-    setAddStatus(null)
 
     const definition = await validateEnglishWord(word)
     if (definition === null) {
-      setAddStatus({ type: 'error', message: `"${word}" was not found in the English dictionary.` })
+      notify.error(`"${word}" was not found in the English dictionary.`)
       setIsAdding(false)
       return
     }
 
     try {
       await addSpelling({ variables: { profileId, word, definition }, refetchQueries: getRefetchQueries() })
-      setAddStatus({ type: 'success', message: `"${word}" added successfully.` })
+      notify.success(`"${word}" added successfully.`)
       setAddInput('')
     } catch (err) {
       if (err.message?.includes('Unique constraint')) {
-        setAddStatus({ type: 'error', message: `"${word}" has already been added.` })
+        notify.error(`"${word}" has already been added.`)
       } else {
-        setAddStatus({ type: 'error', message: 'Failed to add word. Please try again.' })
+        notify.error('Failed to add word. Please try again.')
       }
     } finally {
       setIsAdding(false)
@@ -389,19 +389,13 @@ export default function Spellings() {
           type="text"
           placeholder="Add a word..."
           value={addInput}
-          onChange={e => { setAddInput(e.target.value); setAddStatus(null) }}
+          onChange={e => setAddInput(e.target.value)}
           disabled={isAdding}
         />
         <button className="add-btn" type="submit" disabled={isAdding || !addInput.trim()}>
           {isAdding ? 'Checking...' : 'Add'}
         </button>
       </form>
-
-      {addStatus && (
-        <div className={`status-msg status-${addStatus.type}`}>
-          {addStatus.message}
-        </div>
-      )}
 
       <div className="search-container" ref={searchContainerRef}>
         <div className="search-bar">

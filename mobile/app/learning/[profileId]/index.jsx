@@ -53,6 +53,7 @@ export default function LearningHubScreen() {
       <Text style={s.title}>Learning</Text>
       <Text style={s.subtitle}>Choose an app to start learning.</Text>
 
+      {/* Row 1 */}
       <View style={s.tiles}>
         {/* Spellings tile */}
         <Pressable
@@ -78,6 +79,21 @@ export default function LearningHubScreen() {
           <Text style={s.tileDesc}>Thirukkural · Tamil · Transliteration</Text>
         </Pressable>
       </View>
+
+      {/* Row 2 */}
+      <View style={s.tiles}>
+        {/* Conversation tile */}
+        <Pressable
+          style={[s.tile, s.tileConversation]}
+          onPress={() => router.push(`/learning/${profileId}/conversation`)}
+        >
+          <View style={[s.tileIcon, s.tileIconConvBg]}>
+            <Text style={s.tileIconConvText}>💬</Text>
+          </View>
+          <Text style={[s.tileLabel, s.tileLabelConv]}>Conversation</Text>
+          <Text style={s.tileDesc}>Chat with an AI in English, Tamil & Hindi</Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   )
 }
@@ -93,14 +109,18 @@ const s = StyleSheet.create({
   profileCaret:     { color: '#666', fontSize: 12 },
   title:            { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 6 },
   subtitle:         { color: '#888', fontSize: 15, marginBottom: 32 },
-  tiles:            { flexDirection: 'row', gap: 14 },
+  tiles:            { flexDirection: 'row', gap: 14, marginBottom: 14 },
   tile:             { flex: 1, borderRadius: 20, padding: 20, borderWidth: 1, alignItems: 'flex-start', gap: 8 },
   tileSpellings:    { backgroundColor: 'rgba(100,108,255,0.08)', borderColor: 'rgba(100,108,255,0.3)' },
   tileTamil:        { backgroundColor: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.3)' },
+  tileConversation: { backgroundColor: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.3)' },
   tileIcon:         { width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(100,108,255,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   tileIconText:     { color: '#646cff', fontSize: 20, fontWeight: '800' },
   tileIconTamil:    { color: '#f59e0b', fontSize: 24 },
+  tileIconConvBg:   { backgroundColor: 'rgba(16,185,129,0.15)' },
+  tileIconConvText: { fontSize: 24 },
   tileLabel:        { color: '#646cff', fontSize: 17, fontWeight: '700' },
   tileLabelTamil:   { color: '#f59e0b' },
+  tileLabelConv:    { color: '#10b981' },
   tileDesc:         { color: '#666', fontSize: 11, lineHeight: 16 },
 })

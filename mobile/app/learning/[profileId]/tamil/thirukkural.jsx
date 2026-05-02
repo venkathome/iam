@@ -31,21 +31,25 @@ function PlayButton({ text }) {
     stoppedRef.current = false
     setStatus('loading')
     try {
-      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: false })
-      // Build URIs directly — expo-av streams from HTTP
-      const uris = lines.map(line => `${TTS_URL}?text=${encodeURIComponent(line)}`)
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: true })
       setStatus('playing')
-      for (let i = 0; i < uris.length; i++) {
+      for (let i = 0; i < lines.length; i++) {
         if (stoppedRef.current) return
-        const { sound } = await Audio.Sound.createAsync({ uri: uris[i] }, { shouldPlay: true })
-        soundsRef.current.push(sound)
+        const uri = `${TTS_URL}?text=${encodeURIComponent(lines[i])}`
+        const { sound } = await Audio.Sound.createAsync({ uri }, { shouldPlay: false, isLooping: false })
+        soundsRef.current = [sound]
         await new Promise(resolve => {
+          let done = false
           sound.setOnPlaybackStatusUpdate(st => {
-            if (st.didJustFinish || st.error) resolve()
+            if (done) return
+            if (stoppedRef.current || st.didJustFinish || st.error != null) { done = true; resolve() }
           })
+          sound.playAsync().catch(() => resolve())
         })
-        if (i < uris.length - 1 && !stoppedRef.current) {
-          await new Promise(r => setTimeout(r, 400))
+        try { await sound.unloadAsync() } catch {}
+        soundsRef.current = []
+        if (i < lines.length - 1 && !stoppedRef.current) {
+          await new Promise(r => setTimeout(r, 300))
         }
       }
     } catch {
@@ -57,8 +61,7 @@ function PlayButton({ text }) {
 
   async function toggle() {
     if (status !== 'idle') { await stopAll(); return }
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
-    await fetchAndPlay(lines)
+    await fetchAndPlay([text.replace(/\n/g, ' ')])
   }
 
   return (

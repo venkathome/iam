@@ -1,0 +1,259 @@
+.tf-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+}
+
+.tf-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 600px;
+}
+
+.tf-top h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.tf-scoreboard {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  font-size: 1rem;
+}
+
+.tf-score-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #4ade80;
+}
+
+.tf-score-sep {
+  color: #555;
+  font-size: 1.2rem;
+}
+
+.tf-score-total {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tf-streak {
+  margin-left: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+/* Progress bar */
+.tf-progress-bar {
+  width: 100%;
+  max-width: 600px;
+  height: 5px;
+  background: #2a2a2a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tf-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22d3ee);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.tf-counter {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+  align-self: flex-start;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Question card */
+.tf-card {
+  width: 100%;
+  max-width: 600px;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 18px;
+  padding: 2rem;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.tf-card--correct {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.tf-card--wrong {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.tf-statement {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+.tf-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.tf-verdict {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.tf-card--correct .tf-verdict { color: #4ade80; }
+.tf-card--wrong   .tf-verdict { color: #f87171; }
+
+.tf-explanation {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #999;
+  line-height: 1.5;
+}
+
+/* Answer buttons */
+.tf-buttons {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.tf-btn {
+  flex: 1;
+  padding: 1.1rem;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, filter 0.2s;
+}
+
+.tf-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.tf-btn--true {
+  background: #22c55e;
+  color: #fff;
+}
+
+.tf-btn--true:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.tf-btn--false {
+  background: #ef4444;
+  color: #fff;
+}
+
+.tf-btn--false:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.tf-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Summary screen */
+.tf-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.tf-summary h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.tf-summary-score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.summary-num {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #4ade80;
+  line-height: 1;
+}
+
+.summary-of {
+  font-size: 1.8rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.summary-pct {
+  margin: 0;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.summary-streak {
+  margin: 0;
+  font-size: 1rem;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.tf-play-again {
+  margin-top: 0.5rem;
+  padding: 0.7rem 2rem;
+  background: #4ade80;
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tf-play-again:hover {
+  background: #22c55e;
+}
+
+@media (prefers-color-scheme: light) {
+  .tf-card {
+    background: #f5f5f5;
+    border-color: #e0e0e0;
+  }
+  .tf-card--correct { background: rgba(74, 222, 128, 0.08); }
+  .tf-card--wrong   { background: rgba(248, 113, 113, 0.08); }
+  .tf-statement { color: #222; }
+  .tf-progress-bar { background: #e5e5e5; }
+}

@@ -1,0 +1,115 @@
+.si-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+}
+
+.si-title {
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  margin: 0;
+  text-shadow: 0 0 16px rgba(0,255,65,0.8), 0 0 32px rgba(0,255,65,0.3);
+}
+
+.si-wrap {
+  position: relative;
+  line-height: 0;
+}
+
+.si-canvas {
+  display: block;
+  border: 2px solid rgba(0,255,65,0.5);
+  box-shadow: 0 0 24px rgba(0,255,65,0.2);
+}
+
+.si-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  background: rgba(0,0,0,0.85);
+  border: 2px solid rgba(0,255,65,0.35);
+}
+
+.si-over-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  margin: 0;
+  color: #00ff41;
+  text-shadow: 0 0 20px rgba(0,255,65,0.9);
+}
+
+.si-over-title--win {
+  color: #ffeb3b;
+  text-shadow: 0 0 20px rgba(255,235,59,0.9);
+}
+
+.si-over-sub {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+
+.si-btn {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  padding: 0.5rem 1.6rem;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.si-btn:hover {
+  background: rgba(0,255,65,0.12);
+  box-shadow: 0 0 12px rgba(0,255,65,0.3);
+}
+
+.si-tip {
+  font-size: 0.7rem;
+  opacity: 0.45;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.si-hud {
+  display: flex;
+  gap: 2.5rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid rgba(0,255,65,0.3);
+  background: rgba(0,255,65,0.04);
+}
+
+.si-hud strong {
+  color: #00ff41;
+  text-shadow: 0 0 8px rgba(0,255,65,0.5);
+}
+
+/* Breadcrumb overrides */
+.si-page .breadcrumb    { --crumb-color: rgba(0,255,65,0.6); }
+.si-page .crumb-link    { color: rgba(0,255,65,0.6) !important; }
+.si-page .crumb-current { color: #00ff41 !important; }
+.si-page .crumb-sep     { color: rgba(0,255,65,0.4) !important; }

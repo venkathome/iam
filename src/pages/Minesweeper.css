@@ -1,0 +1,187 @@
+.ms-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+}
+
+.ms-title {
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  margin: 0;
+  text-shadow: 0 0 16px rgba(0,255,65,0.8), 0 0 32px rgba(0,255,65,0.3);
+}
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+.ms-toolbar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ms-diff-btn {
+  background: transparent;
+  border: 1px solid rgba(0,255,65,0.4);
+  color: rgba(0,255,65,0.6);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.ms-diff-btn:hover,
+.ms-diff-btn--active {
+  background: rgba(0,255,65,0.1);
+  border-color: #00ff41;
+  color: #00ff41;
+}
+
+/* ── Status bar ──────────────────────────────────────────── */
+.ms-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid rgba(0,255,65,0.3);
+  background: rgba(0,255,65,0.03);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+}
+
+.ms-stat {
+  min-width: 60px;
+  text-align: center;
+}
+
+.ms-reset-btn {
+  background: transparent;
+  border: 1px solid rgba(0,255,65,0.4);
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.ms-reset-btn:hover {
+  background: rgba(0,255,65,0.1);
+}
+
+/* ── Board ───────────────────────────────────────────────── */
+.ms-board {
+  display: grid;
+  gap: 2px;
+  background: #111;
+  border: 2px solid rgba(0,255,65,0.5);
+  box-shadow: 0 0 20px rgba(0,255,65,0.2);
+  padding: 4px;
+}
+
+.ms-cell {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: background 0.1s;
+  line-height: 1;
+  user-select: none;
+}
+
+.ms-cell--hidden {
+  background: #1e2e1e;
+  box-shadow: inset 0 0 0 1px rgba(0,255,65,0.15);
+}
+
+.ms-cell--hidden:hover {
+  background: #263d26;
+  box-shadow: inset 0 0 0 1px rgba(0,255,65,0.35);
+}
+
+.ms-cell--revealed {
+  background: #0f160f;
+  box-shadow: inset 0 0 0 1px #141814;
+}
+
+.ms-cell--exploded {
+  background: #3d0000 !important;
+  box-shadow: 0 0 12px rgba(255,0,0,0.6) !important;
+}
+
+.ms-cell--flagged-win {
+  background: #1a2e1a !important;
+}
+
+/* ── Result ──────────────────────────────────────────────── */
+.ms-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ms-result--win {
+  color: #00ff41;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 12px rgba(0,255,65,0.7);
+}
+
+.ms-result--lose {
+  color: #ff4444;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 12px rgba(255,68,68,0.7);
+}
+
+.ms-new-btn {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 1.4rem;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.ms-new-btn:hover {
+  background: rgba(0,255,65,0.12);
+  box-shadow: 0 0 12px rgba(0,255,65,0.3);
+}
+
+.ms-tip {
+  font-size: 0.7rem;
+  opacity: 0.4;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* Breadcrumb overrides */
+.ms-page .breadcrumb    { --crumb-color: rgba(0,255,65,0.6); }
+.ms-page .crumb-link    { color: rgba(0,255,65,0.6) !important; }
+.ms-page .crumb-current { color: #00ff41 !important; }
+.ms-page .crumb-sep     { color: rgba(0,255,65,0.4) !important; }

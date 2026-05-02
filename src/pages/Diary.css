@@ -634,6 +634,207 @@
 }
 .df-btn-save:hover { box-shadow: 0 4px 12px rgba(138,79,10,0.4); transform: translateY(-1px); }
 
+/* ── Manage-types button in filter bar ─────────────────────────────────── */
+
+.dchip-manage {
+  background: #fff;
+  border-color: #d0c4b0;
+  color: #7a5a38;
+  font-size: 0.8rem;
+}
+.dchip-manage:hover { border-color: #c47a20; color: #c47a20; background: rgba(196,122,32,0.06); }
+
+/* ── EventTypes modal overlay ───────────────────────────────────────────── */
+
+.et-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 16px;
+}
+
+.et-modal {
+  background: #fff;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+.et-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #f0e8d8;
+}
+
+.et-modal-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2c1a0e;
+}
+
+.et-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.et-close:hover { background: #f5ede0; color: #7a5a38; }
+
+/* ── Type list ──────────────────────────────────────────────────────────── */
+
+.et-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.et-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background 0.15s;
+}
+.et-row:hover { background: #faf7f2; }
+
+.et-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.et-name {
+  flex: 1;
+  font-size: 0.92rem;
+  color: #2c1a0e;
+  font-weight: 500;
+}
+
+.et-row-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Edit form (inline inside a row) ────────────────────────────────────── */
+
+.et-edit-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.et-edit-top,
+.et-add-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.et-name-input {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1.5px solid #e0d0ba;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #2c1a0e;
+  background: #fdfaf6;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.et-name-input:focus { border-color: #c47a20; }
+
+/* ── Color picker grid ──────────────────────────────────────────────────── */
+
+.et-color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 2px 2px;
+}
+
+.et-color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+.et-color-swatch:hover { transform: scale(1.2); }
+.et-color-swatch--on { border-color: #2c1a0e; transform: scale(1.15); }
+
+/* ── Shared action buttons ──────────────────────────────────────────────── */
+
+.et-btn {
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+  transition: all 0.12s;
+}
+
+.et-btn-save  { background: #c47a20; color: #fff; }
+.et-btn-save:hover { background: #a8661a; }
+
+.et-btn-cancel { background: #f5ede0; color: #7a5a38; border-color: #e0d0ba; }
+.et-btn-cancel:hover { background: #ede4d6; }
+
+.et-btn-edit { background: #f5ede0; color: #7a5a38; border-color: #e0d0ba; }
+.et-btn-edit:hover { background: #ede4d6; }
+
+.et-btn-del  { background: none; color: #bbb; border-color: #e8dcc8; }
+.et-btn-del:hover { color: #ef4444; border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
+.et-btn-del.confirming { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.1); animation: pulse-red 0.6s ease-in-out infinite alternate; }
+
+.et-btn-add { background: #c47a20; color: #fff; }
+.et-btn-add:hover:not(:disabled) { background: #a8661a; }
+.et-btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@keyframes pulse-red {
+  from { background: rgba(239,68,68,0.06); }
+  to   { background: rgba(239,68,68,0.16); }
+}
+
+/* ── Add-new form (bottom of modal) ────────────────────────────────────── */
+
+.et-add-form {
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f0e8d8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fdfaf6;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {

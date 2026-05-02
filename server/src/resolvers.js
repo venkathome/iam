@@ -61,6 +61,9 @@ export const resolvers = {
     createProfile: (_, { firstName, lastName, dateOfBirth, email }) =>
       prisma.profile.create({ data: { firstName, lastName, dateOfBirth, email } }),
 
+    updateProfile: (_, { id, firstName, lastName, dateOfBirth, email }) =>
+      prisma.profile.update({ where: { id }, data: { firstName, lastName, dateOfBirth, email } }),
+
     deleteProfile: (_, { id }) => prisma.profile.delete({ where: { id } }),
 
     addSpelling: (_, { profileId, word, definition }) =>

@@ -1,0 +1,172 @@
+.tetris-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 2rem 1rem 3rem;
+  gap: 1rem;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+}
+
+.tetris-title {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  margin: 0;
+  text-shadow: 0 0 16px rgba(0,255,65,0.8), 0 0 32px rgba(0,255,65,0.3);
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.tetris-layout {
+  display: flex;
+  gap: 1.2rem;
+  align-items: flex-start;
+}
+
+/* ── Board ───────────────────────────────────────────────── */
+.tetris-board-wrap {
+  position: relative;
+  line-height: 0;
+}
+
+.tetris-board {
+  display: grid;
+  grid-template-columns: repeat(10, 28px);
+  grid-template-rows: repeat(20, 28px);
+  gap: 1px;
+  background: #111;
+  border: 2px solid rgba(0,255,65,0.6);
+  box-shadow: 0 0 20px rgba(0,255,65,0.25), inset 0 0 20px rgba(0,0,0,0.5);
+  padding: 1px;
+}
+
+.tetris-cell {
+  width: 28px;
+  height: 28px;
+  background: #0f0f0f;
+  border: 1px solid #1a1a1a;
+  box-sizing: border-box;
+}
+
+.tetris-cell--ghost {
+  background: rgba(0,255,65,0.08) !important;
+  border: 1px solid rgba(0,255,65,0.2) !important;
+  box-shadow: none !important;
+}
+
+/* ── Overlay ─────────────────────────────────────────────── */
+.tetris-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(0,0,0,0.85);
+  border: 2px solid rgba(0,255,65,0.4);
+}
+
+.overlay-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  margin: 0;
+  text-shadow: 0 0 16px rgba(0,255,65,0.8);
+}
+
+.overlay-sub {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.overlay-btn {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 1.4rem;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.overlay-btn:hover {
+  background: rgba(0,255,65,0.12);
+  box-shadow: 0 0 12px rgba(0,255,65,0.3);
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.tetris-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 110px;
+}
+
+.tetris-panel {
+  border: 1px solid rgba(0,255,65,0.3);
+  background: rgba(0,255,65,0.03);
+  padding: 0.6rem 0.8rem;
+}
+
+.panel-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  opacity: 0.5;
+  margin: 0 0 0.25rem;
+}
+
+.panel-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 0 8px rgba(0,255,65,0.5);
+}
+
+/* ── Next piece ──────────────────────────────────────────── */
+.next-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 18px);
+  grid-template-rows: repeat(4, 18px);
+  gap: 1px;
+  margin-top: 0.4rem;
+}
+
+.next-cell {
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+/* ── Controls ────────────────────────────────────────────── */
+.tetris-controls {
+  min-width: 110px;
+}
+
+.ctrl-line {
+  font-size: 0.65rem;
+  opacity: 0.55;
+  margin: 0.15rem 0;
+  letter-spacing: 0.03em;
+  white-space: pre;
+}
+
+/* Breadcrumb overrides for dark page */
+.tetris-page .breadcrumb  { --crumb-color: rgba(0,255,65,0.6); }
+.tetris-page .crumb-link  { color: rgba(0,255,65,0.6) !important; }
+.tetris-page .crumb-current { color: #00ff41 !important; }
+.tetris-page .crumb-sep   { color: rgba(0,255,65,0.4) !important; }

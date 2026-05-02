@@ -1,106 +1,245 @@
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Breadcrumb from '../components/Breadcrumb'
+import { useQuery, useMutation } from '@apollo/client/react'
+import { GET_PROFILES, CREATE_PROFILE, UPDATE_PROFILE, DELETE_PROFILE } from '../apollo/queries'
 import './Home.css'
 
-function RecipesIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="4" width="22" height="32" rx="3" fill="none" stroke="currentColor" strokeWidth="2"/>
-      <rect x="12" y="4" width="16" height="32" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
-      <line x1="15" y1="13" x2="25" y2="13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="15" y1="18" x2="25" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="15" y1="23" x2="21" y2="23" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="31" cy="31" r="7" fill="#646cff"/>
-      <line x1="31" y1="27.5" x2="31" y2="34.5" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-      <line x1="27.5" y1="31" x2="34.5" y2="31" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-    </svg>
-  )
+const AVATAR_COLORS = ['#646cff', '#4ade80', '#f59e0b', '#60a5fa', '#a78bfa', '#f87171', '#34d399']
+
+function avatarColor(name) {
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h)
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
 }
 
-function LearningIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="20,6 36,14 20,22 4,14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      <line x1="20" y1="6" x2="20" y2="22" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.4"/>
-      <path d="M9 17 L9 28 Q9 33 20 33 Q31 33 31 28 L31 17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-      <line x1="36" y1="14" x2="36" y2="22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-      <circle cx="36" cy="24" r="2" fill="currentColor" opacity="0.7"/>
-    </svg>
-  )
+function initials(p) {
+  return (p.firstName[0] + (p.lastName?.[0] ?? '')).toUpperCase()
 }
 
-function DiaryIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* left cover */}
-      <path d="M5 9 C5 7.3 6.3 6 8 6 L18 6 L18 34 L8 34 C6.3 34 5 32.7 5 31 Z"
-        fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      {/* spine */}
-      <line x1="18" y1="6" x2="22" y2="6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
-      <line x1="18" y1="34" x2="22" y2="34" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
-      <line x1="20" y1="6" x2="20" y2="34" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"/>
-      {/* right page */}
-      <path d="M22 6 L32 6 C33.7 6 35 7.3 35 9 L35 31 C35 32.7 33.7 34 32 34 L22 34 Z"
-        fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      {/* lines on right page */}
-      <line x1="25" y1="13" x2="32" y2="13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <line x1="25" y1="18" x2="32" y2="18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <line x1="25" y1="23" x2="29" y2="23" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      {/* small heart on left page */}
-      <path d="M11.5 19 C11.5 17.6 12.4 17 13.2 17 C13.8 17 14.3 17.3 14.5 17.7 C14.7 17.3 15.2 17 15.8 17 C16.6 17 17.5 17.6 17.5 19 C17.5 20.5 14.5 23 14.5 23 C14.5 23 11.5 20.5 11.5 19 Z"
-        fill="currentColor" opacity="0.7"/>
-    </svg>
-  )
+function formatDob(str) {
+  if (!str) return null
+  const [y, m, d] = str.split('-')
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return `${months[parseInt(m, 10) - 1]} ${parseInt(d, 10)}, ${y}`
 }
 
-function FamilyTreeIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.8"/>
-      <line x1="20" y1="11.5" x2="20" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-      <line x1="10" y1="18" x2="30" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-      <line x1="10" y1="18" x2="10" y2="24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-      <line x1="30" y1="18" x2="30" y2="24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-      <circle cx="10" cy="28" r="4" fill="none" stroke="currentColor" strokeWidth="1.6"/>
-      <circle cx="30" cy="28" r="4" fill="none" stroke="currentColor" strokeWidth="1.6"/>
-      <line x1="10" y1="32" x2="10" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <line x1="7" y1="35.5" x2="13" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <line x1="30" y1="32" x2="30" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <line x1="27" y1="35.5" x2="33" y2="35.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <circle cx="7" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
-      <circle cx="13" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
-      <circle cx="27" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
-      <circle cx="33" cy="37.5" r="1.8" fill="currentColor" opacity="0.6"/>
-    </svg>
-  )
-}
+const EMPTY = { firstName: '', lastName: '', dateOfBirth: '', email: '' }
 
 export default function Home() {
   const navigate = useNavigate()
+
+  const [showAddForm, setShowAddForm]     = useState(false)
+  const [addForm, setAddForm]             = useState(EMPTY)
+  const [addError, setAddError]           = useState(null)
+  const [isAdding, setIsAdding]           = useState(false)
+
+  const [editingId, setEditingId]         = useState(null)
+  const [editForm, setEditForm]           = useState(EMPTY)
+  const [editError, setEditError]         = useState(null)
+  const [isSaving, setIsSaving]           = useState(false)
+
+  const [confirmingDelete, setConfirmingDelete] = useState(null)
+  const deleteTimerRef = useRef(null)
+  useEffect(() => () => clearTimeout(deleteTimerRef.current), [])
+
+  const { data, loading } = useQuery(GET_PROFILES)
+  const [createProfile] = useMutation(CREATE_PROFILE, { refetchQueries: [{ query: GET_PROFILES }] })
+  const [updateProfile] = useMutation(UPDATE_PROFILE, { refetchQueries: [{ query: GET_PROFILES }] })
+  const [deleteProfile] = useMutation(DELETE_PROFILE, { refetchQueries: [{ query: GET_PROFILES }] })
+
+  const profiles = data?.profiles ?? []
+
+  // ── Add ──────────────────────────────────────────────────────────────────────
+  function addField(k, v) { setAddForm(f => ({ ...f, [k]: v })); setAddError(null) }
+
+  async function handleAdd(e) {
+    e.preventDefault()
+    if (!addForm.firstName.trim()) { setAddError('First name is required.'); return }
+    setIsAdding(true); setAddError(null)
+    try {
+      await createProfile({ variables: {
+        firstName:   addForm.firstName.trim(),
+        lastName:    addForm.lastName.trim()  || null,
+        dateOfBirth: addForm.dateOfBirth      || null,
+        email:       addForm.email.trim()     || null,
+      }})
+      setAddForm(EMPTY); setShowAddForm(false)
+    } catch { setAddError('Failed to create profile.') }
+    finally   { setIsAdding(false) }
+  }
+
+  // ── Edit ─────────────────────────────────────────────────────────────────────
+  function openEdit(e, p) {
+    e.stopPropagation()
+    setEditingId(p.id)
+    setEditForm({ firstName: p.firstName, lastName: p.lastName ?? '', dateOfBirth: p.dateOfBirth ?? '', email: p.email ?? '' })
+    setEditError(null)
+    setShowAddForm(false)
+  }
+
+  function editField(k, v) { setEditForm(f => ({ ...f, [k]: v })); setEditError(null) }
+
+  async function handleSave(e) {
+    e.preventDefault()
+    if (!editForm.firstName.trim()) { setEditError('First name is required.'); return }
+    setIsSaving(true); setEditError(null)
+    try {
+      await updateProfile({ variables: {
+        id:          editingId,
+        firstName:   editForm.firstName.trim(),
+        lastName:    editForm.lastName.trim()  || null,
+        dateOfBirth: editForm.dateOfBirth      || null,
+        email:       editForm.email.trim()     || null,
+      }})
+      setEditingId(null)
+    } catch { setEditError('Failed to update profile.') }
+    finally   { setIsSaving(false) }
+  }
+
+  // ── Delete ───────────────────────────────────────────────────────────────────
+  function handleDelete(e, id) {
+    e.stopPropagation()
+    if (confirmingDelete === id) {
+      clearTimeout(deleteTimerRef.current)
+      setConfirmingDelete(null)
+      deleteProfile({ variables: { id } })
+      if (editingId === id) setEditingId(null)
+    } else {
+      setConfirmingDelete(id)
+      clearTimeout(deleteTimerRef.current)
+      deleteTimerRef.current = setTimeout(() => setConfirmingDelete(null), 2500)
+    }
+  }
+
   return (
     <div className="home">
-      <Breadcrumb />
-      <h1>Home</h1>
-      <p>Welcome to the IAM application.</p>
-
-      <div className="home-apps">
-        <button className="app-tile" onClick={() => navigate('/recipes')}>
-          <RecipesIcon />
-          <span>Recipes</span>
-        </button>
-        <button className="app-tile app-tile-family" onClick={() => navigate('/family-tree')}>
-          <FamilyTreeIcon />
-          <span>Family Tree</span>
-        </button>
-        <button className="app-tile app-tile-learning" onClick={() => navigate('/learning')}>
-          <LearningIcon />
-          <span>Learning</span>
-        </button>
-        <button className="app-tile app-tile-diary" onClick={() => navigate('/diary')}>
-          <DiaryIcon />
-          <span>Diary</span>
-        </button>
+      <div className="home-header">
+        <div>
+          <h1>IAM</h1>
+          <p>Select a profile to continue</p>
+        </div>
+        {!showAddForm && (
+          <button className="add-profile-btn-inline" onClick={() => { setShowAddForm(true); setEditingId(null) }}>
+            + Add Profile
+          </button>
+        )}
       </div>
+
+      {loading ? (
+        <p className="home-msg">Loading profiles…</p>
+      ) : (
+        <div className="profile-list">
+
+          {profiles.length === 0 && !showAddForm && (
+            <p className="home-msg">No profiles yet. Add one to get started.</p>
+          )}
+
+          {profiles.map(p => {
+            const color   = avatarColor(p.firstName)
+            const isConf  = confirmingDelete === p.id
+            const isEditing = editingId === p.id
+            return (
+              <div key={p.id} className="profile-card-wrap">
+                <div
+                  className={`profile-card${isEditing ? ' profile-card--editing' : ''}`}
+                  onClick={() => !isEditing && navigate(`/dashboard/${p.id}`)}
+                >
+                  <div className="profile-avatar" style={{ background: color }}>
+                    {initials(p)}
+                  </div>
+                  <div className="profile-info">
+                    <span className="profile-name">{p.firstName}{p.lastName ? ` ${p.lastName}` : ''}</span>
+                    {p.dateOfBirth && <span className="profile-meta">Born {formatDob(p.dateOfBirth)}</span>}
+                    {p.email       && <span className="profile-meta">{p.email}</span>}
+                  </div>
+                  <div className="profile-actions">
+                    <button
+                      className={`profile-action-btn${isEditing ? ' active' : ''}`}
+                      onClick={e => isEditing ? (e.stopPropagation(), setEditingId(null)) : openEdit(e, p)}
+                      title={isEditing ? 'Cancel edit' : 'Edit profile'}
+                    >
+                      {isEditing ? '✕' : '✎'}
+                    </button>
+                    <button
+                      className={`profile-action-btn profile-action-btn--delete${isConf ? ' confirming' : ''}`}
+                      onClick={e => handleDelete(e, p.id)}
+                      title={isConf ? 'Click again to confirm' : 'Delete profile'}
+                    >
+                      {isConf ? '✓' : '🗑'}
+                    </button>
+                  </div>
+                </div>
+
+                {isEditing && (
+                  <form className="profile-edit-form" onSubmit={handleSave} onClick={e => e.stopPropagation()}>
+                    {editError && <p className="form-error">{editError}</p>}
+                    <div className="form-row">
+                      <div className="form-field">
+                        <label className="form-label">First Name <span className="required">*</span></label>
+                        <input className="form-input" value={editForm.firstName} onChange={e => editField('firstName', e.target.value)} autoFocus />
+                      </div>
+                      <div className="form-field">
+                        <label className="form-label">Last Name</label>
+                        <input className="form-input" value={editForm.lastName} onChange={e => editField('lastName', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="form-row">
+                      <div className="form-field">
+                        <label className="form-label">Date of Birth</label>
+                        <input className="form-input form-input--date" type="date" value={editForm.dateOfBirth} onChange={e => editField('dateOfBirth', e.target.value)} />
+                      </div>
+                      <div className="form-field">
+                        <label className="form-label">Email</label>
+                        <input className="form-input" type="email" value={editForm.email} onChange={e => editField('email', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="form-actions">
+                      <button type="button" className="form-cancel-btn" onClick={() => setEditingId(null)}>Cancel</button>
+                      <button type="submit" className="form-submit-btn" disabled={isSaving}>
+                        {isSaving ? 'Saving…' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )
+          })}
+
+          {showAddForm && (
+            <form className="profile-add-form" onSubmit={handleAdd}>
+              <h3 className="form-title">New Profile</h3>
+              {addError && <p className="form-error">{addError}</p>}
+              <div className="form-row">
+                <div className="form-field">
+                  <label className="form-label">First Name <span className="required">*</span></label>
+                  <input className="form-input" value={addForm.firstName} onChange={e => addField('firstName', e.target.value)} autoFocus />
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Last Name</label>
+                  <input className="form-input" value={addForm.lastName} onChange={e => addField('lastName', e.target.value)} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label className="form-label">Date of Birth</label>
+                  <input className="form-input form-input--date" type="date" value={addForm.dateOfBirth} onChange={e => addField('dateOfBirth', e.target.value)} />
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Email</label>
+                  <input className="form-input" type="email" value={addForm.email} onChange={e => addField('email', e.target.value)} />
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="button" className="form-cancel-btn" onClick={() => { setShowAddForm(false); setAddForm(EMPTY); setAddError(null) }}>Cancel</button>
+                <button type="submit" className="form-submit-btn" disabled={isAdding || !addForm.firstName.trim()}>
+                  {isAdding ? 'Creating…' : 'Create Profile'}
+                </button>
+              </div>
+            </form>
+          )}
+
+        </div>
+      )}
     </div>
   )
 }
