@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
@@ -13,7 +14,7 @@ import TicTacToe from './pages/TicTacToe'
 import Ludo from './pages/Ludo'
 import Questions from './pages/Questions'
 import Brands from './pages/Brands'
-import Therapy from './pages/Therapy'
+const Therapy = lazy(() => import('./pages/Therapy'))
 import Hangman from './pages/Hangman'
 import WordScramble from './pages/WordScramble'
 import Crossword from './pages/Crossword'
@@ -43,7 +44,11 @@ function App() {
     <Routes>
       <Route path="/"                                        element={<Home />} />
       <Route path="/dashboard/:profileId"                   element={<Dashboard />} />
-      <Route path="/therapy/:profileId"                     element={<Therapy />} />
+      <Route path="/therapy/:profileId"                     element={
+        <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', fontSize: 18, color: '#888' }}>Loading therapy materials…</div>}>
+          <Therapy />
+        </Suspense>
+      } />
       <Route path="/recipes"                                element={<Recipes />} />
       <Route path="/family-tree"                            element={<FamilyTree />} />
       <Route path="/learning"                               element={<Navigate to="/" replace />} />
