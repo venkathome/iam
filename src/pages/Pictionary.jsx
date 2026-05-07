@@ -1,6 +1,17 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Pictionary.css'
+
+const HOW_TO_PLAY = [
+  'A drawing is revealed step by step.',
+  'Type your guess for what it shows at any point and press Enter.',
+  'The earlier you guess correctly, the more points you earn.',
+  'Press "Reveal next step" if you need more of the drawing to figure it out.',
+  'Guess all the drawings for the highest possible score!',
+]
 
 function shuffle(arr) {
   const a = [...arr]
@@ -228,19 +239,44 @@ const SUBJECTS = [
   },
 ]
 
+const DIFF_CONFIG = {
+  'very-easy': { maxSteps: 8, hintAfter: 1 },
+  'easy':      { maxSteps: 8, hintAfter: 2 },
+  'medium':    { maxSteps: 8, hintAfter: 3 },
+  'hard':      { maxSteps: 6, hintAfter: 5 },
+  'very-hard': { maxSteps: 4, hintAfter: 8 },
+  'ultimate':  { maxSteps: 2, hintAfter: 12 },
+}
+
 export default function Pictionary() {
-  const [list]                    = useState(() => shuffle(SUBJECTS))
-  const [idx, setIdx]             = useState(0)
-  const [step, setStep]           = useState(0)
-  const [input, setInput]         = useState('')
-  const [status, setStatus]       = useState('playing')
-  const [wrongGuesses, setWrong]  = useState([])
-  const [score, setScore]         = useState(0)
-  const [total, setTotal]         = useState(0)
+  const [difficulty, setDifficulty]   = useState('medium')
+  const [list, setList]               = useState(() => shuffle(SUBJECTS))
+  const [idx, setIdx]                 = useState(0)
+  const [step, setStep]               = useState(0)
+  const [input, setInput]             = useState('')
+  const [status, setStatus]           = useState('playing')
+  const [wrongGuesses, setWrong]      = useState([])
+  const [score, setScore]             = useState(0)
+  const [total, setTotal]             = useState(0)
   const inputRef = useRef(null)
 
+  const cfg = DIFF_CONFIG[difficulty]
   const subject  = list[idx]
-  const maxSteps = subject.steps.length
+  const effectiveMaxSteps = Math.min(cfg.maxSteps, subject.steps.length)
+  const visibleSteps = Math.min(step + 1, effectiveMaxSteps)
+  const showHint = step >= cfg.hintAfter
+
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    setList(shuffle(SUBJECTS))
+    setIdx(0)
+    setStep(0)
+    setInput('')
+    setStatus('playing')
+    setWrong([])
+    setScore(0)
+    setTotal(0)
+  }
 
   function guess(e) {
     e.preventDefault()
@@ -248,7 +284,7 @@ export default function Pictionary() {
     if (!g || status !== 'playing') return
     setInput('')
     if (g === subject.word) {
-      const points = Math.max(1, maxSteps - step)
+      const points = Math.max(1, effectiveMaxSteps - step)
       setScore(s => s + points)
       setTotal(t => t + 1)
       setStatus('won')
@@ -259,7 +295,7 @@ export default function Pictionary() {
   }
 
   function revealMore() {
-    if (step + 1 >= maxSteps) {
+    if (step + 1 >= effectiveMaxSteps) {
       setTotal(t => t + 1)
       setStatus('lost')
     } else {
@@ -275,7 +311,13 @@ export default function Pictionary() {
     setWrong([])
   }
 
-  const points = Math.max(1, maxSteps - step)
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'ArrowRight' && status !== 'playing') next() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
+  const points = Math.max(1, effectiveMaxSteps - step)
 
   return (
     <div className="pict-page">
@@ -286,15 +328,22 @@ export default function Pictionary() {
         <div className="pict-score">Score: {score} / {total}</div>
       </div>
 
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
+
       <div className="pict-meta">
         <span className="pict-category-badge">{subject.clue}</span>
-        <span className="pict-step-counter">Step {step + 1} of {maxSteps}</span>
+        <span className="pict-step-counter">Step {visibleSteps} of {effectiveMaxSteps}</span>
         {status === 'playing' && <span className="pict-points-hint">+{points} pts if correct now</span>}
       </div>
 
+      {showHint && status === 'playing' && (
+        <p className="pict-hint">Hint: {subject.clue}</p>
+      )}
+
       <div className="pict-canvas-wrap">
         <svg viewBox="0 0 200 200" className="pict-canvas">
-          {subject.steps.slice(0, step + 1)}
+          {subject.steps.slice(0, visibleSteps)}
         </svg>
       </div>
 
@@ -317,8 +366,8 @@ export default function Pictionary() {
           </form>
 
           <button className="pict-btn pict-btn--reveal" onClick={revealMore}>
-            {step + 1 < maxSteps
-              ? `Reveal next clue (${maxSteps - step - 1} more left)`
+            {visibleSteps < effectiveMaxSteps
+              ? `Reveal next clue (${effectiveMaxSteps - visibleSteps} more left)`
               : 'Give up — show the answer'}
           </button>
 

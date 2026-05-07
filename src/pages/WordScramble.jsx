@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './WordScramble.css'
+
+const HOW_TO_PLAY = [
+  'The letters of a word have been jumbled up.',
+  'Unscramble them and type the correct word in the box.',
+  'Read the clue for a hint about what the word means.',
+  'You have a limited number of guesses — choose wisely!',
+  'Press → (right arrow) to skip to the next word after finishing.',
+]
 
 const ALL_WORDS = [
   'elephant','volcano','umbrella','dolphin','cinnamon','telescope','avalanche',
@@ -67,14 +78,22 @@ function scramble(word) {
   return result
 }
 
-const MAX_GUESSES = 5
+const DIFF_CONFIG = {
+  'very-easy': { maxGuesses: 8 },
+  'easy':      { maxGuesses: 6 },
+  'medium':    { maxGuesses: 5 },
+  'hard':      { maxGuesses: 4 },
+  'very-hard': { maxGuesses: 3 },
+  'ultimate':  { maxGuesses: 2 },
+}
 
 export default function WordScramble() {
+  const [difficulty, setDifficulty]   = useState('medium')
   const [wordList, setWordList] = useState(() => shuffle(ALL_WORDS))
   const [index, setIndex]             = useState(0)
   const [scrambled, setScrambled]     = useState(() => scramble(ALL_WORDS[0]))
   const [input, setInput]             = useState('')
-  const [guessesLeft, setGuessesLeft] = useState(MAX_GUESSES)
+  const [guessesLeft, setGuessesLeft] = useState(DIFF_CONFIG['medium'].maxGuesses)
   const [status, setStatus]           = useState('playing') // playing | correct | failed
   const [shake, setShake]             = useState(false)
   const [score, setScore]             = useState(0)
@@ -84,11 +103,37 @@ export default function WordScramble() {
   const inputRef = useRef(null)
 
   const currentWord = wordList[index]
+  const maxGuesses = DIFF_CONFIG[difficulty].maxGuesses
+
+  function resetGame(newMaxGuesses) {
+    const newList = shuffle(ALL_WORDS)
+    setWordList(newList)
+    setIndex(0)
+    const firstWord = newList[0]
+    setScrambled(scramble(firstWord))
+    setInput('')
+    setGuessesLeft(newMaxGuesses)
+    setStatus('playing')
+    setScore(0)
+    setAttempted(0)
+    setClue('')
+    setClueLoading(true)
+    fetchClue(firstWord).then(def => {
+      setClue(def || `Unscramble this ${firstWord.length}-letter word`)
+      setClueLoading(false)
+    })
+    inputRef.current?.focus()
+  }
+
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    resetGame(DIFF_CONFIG[d].maxGuesses)
+  }
 
   useEffect(() => {
     setScrambled(scramble(currentWord))
     setInput('')
-    setGuessesLeft(MAX_GUESSES)
+    setGuessesLeft(maxGuesses)
     setStatus('playing')
     setClue('')
     setClueLoading(true)
@@ -131,9 +176,19 @@ export default function WordScramble() {
     }
   }
 
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'ArrowRight' && status !== 'playing') next() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   return (
     <div className="scramble-page">
       <Breadcrumb />
+      <p className="diff-label-text">Difficulty</p>
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
+
       <div className="scramble-header">
         <h1>Word Scramble</h1>
         <div className="scramble-score">
@@ -155,7 +210,7 @@ export default function WordScramble() {
         </div>
 
         <div className="scramble-guesses">
-          {Array.from({ length: MAX_GUESSES }, (_, i) => (
+          {Array.from({ length: maxGuesses }, (_, i) => (
             <span
               key={i}
               className={`guess-pip ${i < guessesLeft ? 'guess-pip--alive' : 'guess-pip--used'}`}

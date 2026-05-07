@@ -1,22 +1,40 @@
 import { useState, useEffect, useRef } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './SequenceRecall.css'
 
-const SHOW_MS = 800
-const GAP_MS  = 400
+const HOW_TO_PLAY = [
+  'Press Start to begin.',
+  'Watch carefully as digits light up one at a time.',
+  'When the sequence finishes, tap the same digits in the same order.',
+  'Each round adds one more digit to remember.',
+  'The game ends when you get the order wrong — how far can you go?',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { startLen: 2, showMs: 1100, gapMs: 500 },
+  'easy':      { startLen: 3, showMs: 900,  gapMs: 400 },
+  'medium':    { startLen: 4, showMs: 700,  gapMs: 350 },
+  'hard':      { startLen: 5, showMs: 500,  gapMs: 250 },
+  'very-hard': { startLen: 6, showMs: 350,  gapMs: 180 },
+  'ultimate':  { startLen: 7, showMs: 200,  gapMs: 120 },
+}
 
 function makeSeq(len) {
   return Array.from({ length: len }, () => Math.floor(Math.random() * 9) + 1)
 }
 
 export default function SequenceRecall() {
-  const [phase, setPhase]       = useState('idle')   // idle | showing | input | correct | gameover
-  const [sequence, setSequence] = useState([])
-  const [seqLen, setSeqLen]     = useState(3)
-  const [shown, setShown]       = useState(null)      // number currently displayed (null = gap)
-  const [entered, setEntered]   = useState([])        // player's entries so far
-  const [wrongAt, setWrongAt]   = useState(null)      // index of wrong answer
-  const [best, setBest]         = useState(
+  const [difficulty, setDifficulty] = useState('medium')
+  const [phase, setPhase]           = useState('idle')
+  const [sequence, setSequence]     = useState([])
+  const [seqLen, setSeqLen]         = useState(DIFF_CONFIG['medium'].startLen)
+  const [shown, setShown]           = useState(null)
+  const [entered, setEntered]       = useState([])
+  const [wrongAt, setWrongAt]       = useState(null)
+  const [best, setBest]             = useState(
     () => Number(localStorage.getItem('seqrecall-best') || 0)
   )
   const timers = useRef([])
@@ -24,33 +42,45 @@ export default function SequenceRecall() {
   function cancel() { timers.current.forEach(clearTimeout); timers.current = [] }
   useEffect(() => () => cancel(), [])
 
-  function revealSequence(seq) {
+  function revealSequence(seq, cfg) {
     setPhase('showing')
     setShown(null)
     setEntered([])
     setWrongAt(null)
 
     seq.forEach((n, i) => {
-      const offset = i * (SHOW_MS + GAP_MS)
+      const offset = i * (cfg.showMs + cfg.gapMs)
       timers.current.push(setTimeout(() => setShown(n),    offset))
-      timers.current.push(setTimeout(() => setShown(null), offset + SHOW_MS))
+      timers.current.push(setTimeout(() => setShown(null), offset + cfg.showMs))
     })
     timers.current.push(setTimeout(() => {
       setPhase('input')
-    }, seq.length * (SHOW_MS + GAP_MS) + 200))
+    }, seq.length * (cfg.showMs + cfg.gapMs) + 200))
   }
 
-  function start() {
+  function start(cfg) {
     cancel()
-    const len = 3
+    const len = cfg.startLen
     setSeqLen(len)
     const seq = makeSeq(len)
     setSequence(seq)
-    revealSequence(seq)
+    revealSequence(seq, cfg)
+  }
+
+  function handleDifficultyChange(d) {
+    cancel()
+    setDifficulty(d)
+    setPhase('idle')
+    setSequence([])
+    setSeqLen(DIFF_CONFIG[d].startLen)
+    setShown(null)
+    setEntered([])
+    setWrongAt(null)
   }
 
   function handleDigit(n) {
     if (phase !== 'input') return
+    const cfg        = DIFF_CONFIG[difficulty]
     const idx        = entered.length
     const next       = [...entered, n]
     const isCorrect  = n === sequence[idx]
@@ -76,7 +106,7 @@ export default function SequenceRecall() {
       timers.current.push(setTimeout(() => {
         const seq = makeSeq(nextLen)
         setSequence(seq)
-        revealSequence(seq)
+        revealSequence(seq, cfg)
       }, 1100))
     }
   }
@@ -87,6 +117,9 @@ export default function SequenceRecall() {
     <div className="sr-page">
       <Breadcrumb />
       <h1>Sequence Recall</h1>
+
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="sr-stats">
         <div className="sr-stat">
@@ -99,7 +132,6 @@ export default function SequenceRecall() {
         </div>
       </div>
 
-      {/* Central display */}
       <div className={`sr-display ${phase === 'showing' && shown !== null ? 'sr-display--lit' : ''} ${phase === 'correct' ? 'sr-display--correct' : ''} ${phase === 'gameover' ? 'sr-display--wrong' : ''}`}>
         {phase === 'idle'    && <span className="sr-display-hint">Press Start</span>}
         {phase === 'showing' && shown !== null && <span className="sr-display-num">{shown}</span>}
@@ -117,7 +149,6 @@ export default function SequenceRecall() {
         {phase === 'gameover' && `The sequence was: ${sequence.join('  ')}. You reached length ${seqLen}.`}
       </p>
 
-      {/* Progress dots */}
       {phase === 'input' && (
         <div className="sr-dots">
           {sequence.map((_, i) => {
@@ -133,7 +164,6 @@ export default function SequenceRecall() {
         </div>
       )}
 
-      {/* Digit pad */}
       {phase === 'input' && (
         <div className="sr-digit-grid">
           {[1,2,3,4,5,6,7,8,9].map(n => (
@@ -143,7 +173,7 @@ export default function SequenceRecall() {
       )}
 
       {(phase === 'idle' || phase === 'gameover') && (
-        <button className="sr-cta" onClick={start}>
+        <button className="sr-cta" onClick={() => start(DIFF_CONFIG[difficulty])}>
           {phase === 'idle' ? 'Start Game' : 'Play Again'}
         </button>
       )}

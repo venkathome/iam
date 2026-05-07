@@ -1,0 +1,65 @@
+.htp {
+  max-width: 480px;
+  margin: 0.4rem auto 0.6rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+
+.htp-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.01em;
+}
+
+.htp-toggle:hover {
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.06);
+}
+
+.htp-chevron {
+  font-size: 0.65rem;
+  opacity: 0.5;
+}
+
+.htp-list {
+  margin: 0;
+  padding: 0.1rem 1rem 0.7rem 2.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.htp-step {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: light) {
+  .htp {
+    border-color: rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.03);
+  }
+  .htp-toggle {
+    color: rgba(0,0,0,0.5);
+  }
+  .htp-toggle:hover {
+    color: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.04);
+  }
+  .htp-step {
+    color: rgba(0,0,0,0.6);
+  }
+}

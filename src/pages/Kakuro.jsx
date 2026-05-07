@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Kakuro.css'
+
+const HOW_TO_PLAY = [
+  'Fill each blank white cell with a digit from 1 to 9.',
+  'Each group of cells (a run) must add up to the clue number shown in the black triangle.',
+  'No digit can repeat within the same run.',
+  'Use logic to figure out which digits fit — there is always one solution!',
+]
 
 function shuffle(arr) {
   const a = [...arr]
@@ -123,10 +133,17 @@ function computeClues(template, solution) {
   return clues
 }
 
-const SIZES = { easy: 7, medium: 9, hard: 10, 'very-hard': 11, challenging: 12, ultimate: 13 }
+const DIFF_CONFIG = {
+  'very-easy': { size: 4 },
+  'easy':      { size: 5 },
+  'medium':    { size: 6 },
+  'hard':      { size: 7 },
+  'very-hard': { size: 8 },
+  'ultimate':  { size: 9 },
+}
 
 function generateGame(difficulty) {
-  const size = SIZES[difficulty]
+  const size = DIFF_CONFIG[difficulty].size
   for (let attempt = 0; attempt < 20; attempt++) {
     const template = generateTemplate(size)
     const solution = fillKakuro(template)
@@ -160,17 +177,8 @@ function formatTime(s) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
-const DIFFICULTY_LIST = [
-  { id: 'easy',        label: 'Easy',        hint: '7×7 grid'   },
-  { id: 'medium',      label: 'Medium',      hint: '9×9 grid'   },
-  { id: 'hard',        label: 'Hard',        hint: '10×10 grid' },
-  { id: 'very-hard',   label: 'Very Hard',   hint: '11×11 grid' },
-  { id: 'challenging', label: 'Challenging', hint: '12×12 grid' },
-  { id: 'ultimate',    label: 'Ultimate',    hint: '13×13 grid' },
-]
-
 export default function Kakuro() {
-  const [difficulty, setDifficulty] = useState(null)
+  const [difficulty, setDifficulty] = useState('medium')
   const [generating, setGenerating] = useState(false)
   const [template, setTemplate]     = useState(null)
   const [solution, setSolution]     = useState(null)
@@ -184,7 +192,6 @@ export default function Kakuro() {
   const [gameKey, setGameKey]       = useState(0)
 
   function startGame(diff) {
-    setDifficulty(diff)
     setGenerating(true)
     setTemplate(null); setSolution(null); setClues(null)
     setUserGrid(null); setSelected(null)
@@ -203,6 +210,10 @@ export default function Kakuro() {
       setGenerating(false)
     }, 30)
   }
+
+  useEffect(() => {
+    startGame(difficulty)
+  }, [])
 
   useEffect(() => {
     if (!template || generating || won) return
@@ -273,24 +284,6 @@ export default function Kakuro() {
     getDownRun(template, sr, sc).forEach(([r, c]) => downSet.add(`${r},${c}`))
   }
 
-  if (!difficulty && !generating) {
-    return (
-      <div className="kk-page">
-        <Breadcrumb />
-        <h1>Kakuro</h1>
-        <p className="kk-subtitle">Fill the grid so each run sums to its clue using digits 1–9 (no repeats per run).</p>
-        <div className="kk-diff-grid">
-          {DIFFICULTY_LIST.map(d => (
-            <button key={d.id} className={`kk-diff-btn kk-diff-btn--${d.id}`} onClick={() => startGame(d.id)}>
-              <span className="kk-diff-label">{d.label}</span>
-              <span className="kk-diff-hint">{d.hint}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   if (generating) {
     return (
       <div className="kk-page">
@@ -302,7 +295,7 @@ export default function Kakuro() {
   }
 
   const cellSize = template
-    ? (template.length <= 7 ? 52 : template.length <= 9 ? 44 : template.length <= 11 ? 38 : 34)
+    ? (template.length <= 4 ? 60 : template.length <= 5 ? 52 : template.length <= 6 ? 48 : template.length <= 7 ? 44 : template.length <= 8 ? 40 : 36)
     : 44
 
   const anyFilled = userGrid && template && template.some((row, r) =>
@@ -312,12 +305,17 @@ export default function Kakuro() {
   return (
     <div className="kk-page">
       <Breadcrumb />
+      <h1>Kakuro</h1>
+      <p className="kk-subtitle">Fill the grid so each run sums to its clue using digits 1–9 (no repeats per run).</p>
+
+      <DifficultySelector
+        value={difficulty}
+        onChange={(d) => { setDifficulty(d); startGame(d) }}
+      />
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="kk-topbar">
-        <button className="kk-back-btn" onClick={() => { setDifficulty(null); setTemplate(null) }}>← Back</button>
-        <span className={`kk-badge kk-badge--${difficulty}`}>
-          {DIFFICULTY_LIST.find(d => d.id === difficulty)?.label}
-        </span>
+        <span className={`kk-badge kk-badge--${difficulty}`}>{difficulty.replace('-', ' ')}</span>
         <span className="kk-timer">{formatTime(seconds)}</span>
       </div>
 
@@ -328,65 +326,67 @@ export default function Kakuro() {
         </div>
       )}
 
-      <div className="kk-grid-wrap">
-        <div
-          className="kk-grid"
-          style={{
-            gridTemplateColumns: `repeat(${template[0].length}, ${cellSize}px)`,
-            gridTemplateRows: `repeat(${template.length}, ${cellSize}px)`,
-          }}
-        >
-          {template.map((row, r) => row.map((cell, c) => {
-            if (cell === 0) {
-              const ac = clues[`a_${r}_${c}`] ?? 0
-              const dc = clues[`d_${r}_${c}`] ?? 0
-              const hasClue = ac > 0 || dc > 0
+      {template && (
+        <div className="kk-grid-wrap">
+          <div
+            className="kk-grid"
+            style={{
+              gridTemplateColumns: `repeat(${template[0].length}, ${cellSize}px)`,
+              gridTemplateRows: `repeat(${template.length}, ${cellSize}px)`,
+            }}
+          >
+            {template.map((row, r) => row.map((cell, c) => {
+              if (cell === 0) {
+                const ac = clues[`a_${r}_${c}`] ?? 0
+                const dc = clues[`d_${r}_${c}`] ?? 0
+                const hasClue = ac > 0 || dc > 0
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    className="kk-cell kk-cell--black"
+                    style={{ width: cellSize, height: cellSize }}
+                  >
+                    {hasClue && (
+                      <>
+                        <svg className="kk-diag" viewBox="0 0 40 40" preserveAspectRatio="none">
+                          <line x1="2" y1="2" x2="38" y2="38" stroke="#444" strokeWidth="1.5"/>
+                        </svg>
+                        {dc > 0 && <span className="kk-clue-top">{dc}</span>}
+                        {ac > 0 && <span className="kk-clue-bot">{ac}</span>}
+                      </>
+                    )}
+                  </div>
+                )
+              }
+
+              const key = `${r},${c}`
+              const isSel  = selected && selected[0] === r && selected[1] === c
+              const inWord = !isSel && (acrossSet.has(key) || downSet.has(key))
+              const val    = userGrid[r][c]
+              const wrong  = checked && val > 0 && val !== solution[r][c]
+
+              const cls = [
+                'kk-cell kk-cell--white',
+                isSel  ? 'kk-cell--selected' : '',
+                inWord ? 'kk-cell--inword'   : '',
+                wrong  ? 'kk-cell--wrong'    : '',
+                won    ? 'kk-cell--won'      : '',
+              ].filter(Boolean).join(' ')
+
               return (
                 <div
-                  key={`${r}-${c}`}
-                  className="kk-cell kk-cell--black"
-                  style={{ width: cellSize, height: cellSize }}
+                  key={key}
+                  className={cls}
+                  style={{ width: cellSize, height: cellSize, fontSize: cellSize < 40 ? '0.9rem' : '1.1rem' }}
+                  onClick={() => !won && setSelected([r, c])}
                 >
-                  {hasClue && (
-                    <>
-                      <svg className="kk-diag" viewBox="0 0 40 40" preserveAspectRatio="none">
-                        <line x1="2" y1="2" x2="38" y2="38" stroke="#444" strokeWidth="1.5"/>
-                      </svg>
-                      {dc > 0 && <span className="kk-clue-top">{dc}</span>}
-                      {ac > 0 && <span className="kk-clue-bot">{ac}</span>}
-                    </>
-                  )}
+                  {val > 0 ? val : ''}
                 </div>
               )
-            }
-
-            const key = `${r},${c}`
-            const isSel  = selected && selected[0] === r && selected[1] === c
-            const inWord = !isSel && (acrossSet.has(key) || downSet.has(key))
-            const val    = userGrid[r][c]
-            const wrong  = checked && val > 0 && val !== solution[r][c]
-
-            const cls = [
-              'kk-cell kk-cell--white',
-              isSel  ? 'kk-cell--selected' : '',
-              inWord ? 'kk-cell--inword'   : '',
-              wrong  ? 'kk-cell--wrong'    : '',
-              won    ? 'kk-cell--won'      : '',
-            ].filter(Boolean).join(' ')
-
-            return (
-              <div
-                key={key}
-                className={cls}
-                style={{ width: cellSize, height: cellSize, fontSize: cellSize < 40 ? '0.9rem' : '1.1rem' }}
-                onClick={() => !won && setSelected([r, c])}
-              >
-                {val > 0 ? val : ''}
-              </div>
-            )
-          }))}
+            }))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="kk-controls">
         <div className="kk-numpad">

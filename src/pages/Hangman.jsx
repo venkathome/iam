@@ -1,9 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Hangman.css'
 
-const MAX_WRONG_WORD = 6
-const MAX_WRONG_SENT = 5
+const HOW_TO_PLAY = [
+  'Choose Words mode to guess a hidden word, or Sentences mode to uncover a hidden sentence.',
+  'The mystery word or sentence is shown as blank dashes.',
+  'Click letters (or type) to guess them one at a time.',
+  'Each wrong guess draws one more part of the hangman.',
+  'Reveal the full word or sentence before the drawing is complete!',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { maxWrongWord: 12, maxWrongSent: 8 },
+  'easy':      { maxWrongWord: 10, maxWrongSent: 7 },
+  'medium':    { maxWrongWord: 9,  maxWrongSent: 6 },
+  'hard':      { maxWrongWord: 7,  maxWrongSent: 5 },
+  'very-hard': { maxWrongWord: 5,  maxWrongSent: 4 },
+  'ultimate':  { maxWrongWord: 3,  maxWrongSent: 3 },
+}
 
 const AUTO_REVEAL = new Set([
   'a', 'an', 'the', 'in', 'on', 'at', 'of', 'is', 'are', 'was',
@@ -336,6 +353,9 @@ function HangmanSVG({ wrongCount }) {
       {wrongCount >= 4 && <line x1="100" y1="70" x2="124" y2="90"  stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>}
       {wrongCount >= 5 && <line x1="100" y1="100" x2="76"  y2="128" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>}
       {wrongCount >= 6 && <line x1="100" y1="100" x2="124" y2="128" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>}
+      {wrongCount >= 7 && <line x1="62"  y1="128" x2="76"  y2="128" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>}
+      {wrongCount >= 8 && <line x1="124" y1="128" x2="138" y2="128" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>}
+      {wrongCount >= 9 && <circle cx="95" cy="41" r="2.5" fill="currentColor"/>}
     </svg>
   )
 }
@@ -371,7 +391,7 @@ function SentencesModeTileIcon() {
   )
 }
 
-function WordGame({ onBack }) {
+function WordGame({ onBack, maxWrong }) {
   const [wordList, setWordList] = useState(() => shuffle(ALL_WORDS))
   const [index, setIndex]       = useState(0)
   const [guessed, setGuessed]   = useState(new Set())
@@ -383,7 +403,7 @@ function WordGame({ onBack }) {
   const word    = entry.word.toLowerCase()
   const letters = new Set(word)
   const won     = [...letters].every(l => guessed.has(l))
-  const lost    = wrongCount >= MAX_WRONG_WORD
+  const lost    = wrongCount >= maxWrong
   const status  = won ? 'won' : lost ? 'lost' : 'playing'
 
   useEffect(() => {
@@ -412,14 +432,20 @@ function WordGame({ onBack }) {
     setWrong(0)
   }
 
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'ArrowRight' && status !== 'playing') next() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   return (
     <div className="lang-game">
       <div className="lang-game-header">
         <button className="lang-back-btn" onClick={onBack}>← Back</button>
         <span className="lang-badge lang-badge--category">{entry.category}</span>
         <span className="lang-lives">
-          {Array.from({ length: MAX_WRONG_WORD }, (_, i) => (
-            <span key={i} className={`lang-life ${i < MAX_WRONG_WORD - wrongCount ? 'lang-life--alive' : 'lang-life--lost'}`}>♥</span>
+          {Array.from({ length: maxWrong }, (_, i) => (
+            <span key={i} className={`lang-life ${i < maxWrong - wrongCount ? 'lang-life--alive' : 'lang-life--lost'}`}>♥</span>
           ))}
         </span>
       </div>
@@ -429,7 +455,7 @@ function WordGame({ onBack }) {
         <p>{clueLoading ? 'Loading clue…' : clue}</p>
       </div>
 
-      <HangmanSVG wrongCount={wrongCount} />
+      <HangmanSVG wrongCount={Math.min(wrongCount, 9)} />
 
       <div className="lang-word-blanks">
         {word.split('').map((letter, i) => (
@@ -481,7 +507,7 @@ function WordGame({ onBack }) {
   )
 }
 
-function SentenceGame({ onBack }) {
+function SentenceGame({ onBack, maxWrong }) {
   const [sentList, setSentList] = useState(() => shuffle(ALL_SENTENCES))
   const [index, setIndex]         = useState(0)
   const [revealed, setRevealed]   = useState(new Set())
@@ -495,7 +521,7 @@ function SentenceGame({ onBack }) {
   const uniqueWords = [...new Set(words)]
   const hiddenWords = uniqueWords.filter(w => !AUTO_REVEAL.has(w))
   const won         = hiddenWords.every(w => revealed.has(w))
-  const lost        = wrongCount >= MAX_WRONG_SENT
+  const lost        = wrongCount >= maxWrong
   const status      = won ? 'won' : lost ? 'lost' : 'playing'
 
   function guess(e) {
@@ -521,7 +547,7 @@ function SentenceGame({ onBack }) {
         msg: remaining === 0 ? '🎉 You found them all!' : `"${word}" is correct! ${remaining} word${remaining !== 1 ? 's' : ''} left.`,
       })
     } else {
-      const wrongLeft = MAX_WRONG_SENT - wrongCount - 1
+      const wrongLeft = maxWrong - wrongCount - 1
       setWrong(c => c + 1)
       setLastGuess({
         correct: false,
@@ -544,6 +570,12 @@ function SentenceGame({ onBack }) {
     setLastGuess(null)
   }
 
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'ArrowRight' && status !== 'playing') next() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   const remaining = hiddenWords.filter(w => !revealed.has(w)).length
 
   return (
@@ -554,8 +586,8 @@ function SentenceGame({ onBack }) {
           {entry.type === 'question' ? 'Question' : 'Sentence'}
         </span>
         <span className="lang-lives">
-          {Array.from({ length: MAX_WRONG_SENT }, (_, i) => (
-            <span key={i} className={`lang-life ${i < MAX_WRONG_SENT - wrongCount ? 'lang-life--alive' : 'lang-life--lost'}`}>♥</span>
+          {Array.from({ length: maxWrong }, (_, i) => (
+            <span key={i} className={`lang-life ${i < maxWrong - wrongCount ? 'lang-life--alive' : 'lang-life--lost'}`}>♥</span>
           ))}
         </span>
       </div>
@@ -627,19 +659,39 @@ function SentenceGame({ onBack }) {
 }
 
 export default function Hangman() {
-  const [mode, setMode] = useState(null)
+  const [mode, setMode]           = useState(null)
+  const [difficulty, setDifficulty] = useState('medium')
+  const [gameKey, setGameKey]     = useState(0)
+
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    setGameKey(k => k + 1)
+  }
+
+  const cfg = DIFF_CONFIG[difficulty]
 
   return (
     <div className="language-page">
       <Breadcrumb />
       {mode === 'words' ? (
-        <WordGame onBack={() => setMode(null)} />
+        <>
+          <p className="diff-label-text">Difficulty</p>
+          <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+          <WordGame key={gameKey} onBack={() => setMode(null)} maxWrong={cfg.maxWrongWord} />
+        </>
       ) : mode === 'sentences' ? (
-        <SentenceGame onBack={() => setMode(null)} />
+        <>
+          <p className="diff-label-text">Difficulty</p>
+          <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+          <SentenceGame key={gameKey} onBack={() => setMode(null)} maxWrong={cfg.maxWrongSent} />
+        </>
       ) : (
         <>
           <h1>Hangman</h1>
           <p>Pick a challenge and start guessing.</p>
+          <p className="diff-label-text">Difficulty</p>
+          <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+          <HowToPlay steps={HOW_TO_PLAY} />
           <div className="lang-mode-grid">
             <button className="lang-mode-tile lang-mode-tile--words" onClick={() => setMode('words')}>
               <WordsModeTileIcon />

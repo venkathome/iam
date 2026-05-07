@@ -1,11 +1,29 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Snake.css'
+
+const HOW_TO_PLAY = [
+  'Use the arrow keys (or W A S D) to steer the snake.',
+  'Eat the red food to grow longer and increase your score.',
+  'Avoid hitting the walls or running into your own tail.',
+  'The snake gets faster as you grow — stay sharp!',
+]
 
 const COLS = 25
 const ROWS = 25
-const INIT_INTERVAL = 150
 const MIN_INTERVAL = 60
+
+const DIFF_CONFIG = {
+  'very-easy': { initInterval: 280 },
+  'easy':      { initInterval: 200 },
+  'medium':    { initInterval: 150 },
+  'hard':      { initInterval: 110 },
+  'very-hard': { initInterval: 80  },
+  'ultimate':  { initInterval: 50  },
+}
 
 function initSnake() {
   const r = Math.floor(ROWS / 2)
@@ -35,11 +53,12 @@ function moveSnake(snake, dir, food) {
   return { snake: newSnake, ate, died: false }
 }
 
-function intervalForScore(score) {
-  return Math.max(MIN_INTERVAL, INIT_INTERVAL - Math.floor(score / 5) * 15)
+function intervalForScore(score, initInterval) {
+  return Math.max(MIN_INTERVAL, initInterval - Math.floor(score / 5) * 15)
 }
 
 export default function Snake() {
+  const [difficulty, setDifficulty] = useState('medium')
   const [snake, setSnake] = useState(initSnake)
   const [food, setFood] = useState(() => randomFood(initSnake()))
   const [dir, setDir] = useState({ dr: 0, dc: 1 })
@@ -50,6 +69,7 @@ export default function Snake() {
   const intervalRef = useRef(null)
   const nextDirRef = useRef({ dr: 0, dc: 1 })
   const stateRef = useRef({ snake, food, dir, score })
+  const initIntervalRef = useRef(DIFF_CONFIG['medium'].initInterval)
 
   useEffect(() => {
     stateRef.current = { snake, food, dir, score }
@@ -71,8 +91,9 @@ export default function Snake() {
       const newScore = sc + 1
       setScore(newScore)
       setFood(randomFood(newSnake))
-      const newInterval = intervalForScore(newScore)
-      const oldInterval = intervalForScore(sc)
+      const initInterval = initIntervalRef.current
+      const newInterval = intervalForScore(newScore, initInterval)
+      const oldInterval = intervalForScore(sc, initInterval)
       if (newInterval !== oldInterval) {
         clearInterval(intervalRef.current)
         intervalRef.current = setInterval(tick, newInterval)
@@ -81,6 +102,8 @@ export default function Snake() {
   }, [])
 
   function startGame() {
+    const initInterval = DIFF_CONFIG[difficulty].initInterval
+    initIntervalRef.current = initInterval
     const s = initSnake()
     const f = randomFood(s)
     setSnake(s)
@@ -91,7 +114,7 @@ export default function Snake() {
     setGameOver(false)
     setStarted(true)
     clearInterval(intervalRef.current)
-    intervalRef.current = setInterval(tick, INIT_INTERVAL)
+    intervalRef.current = setInterval(tick, initInterval)
   }
 
   useEffect(() => {
@@ -116,12 +139,13 @@ export default function Snake() {
 
   const snakeSet = new Set(snake.map(s => `${s.r},${s.c}`))
   const level = 1 + Math.floor(score / 5)
-  const speed = intervalForScore(score)
+  const speed = intervalForScore(score, initIntervalRef.current)
 
   return (
     <div className="snake-page">
       <Breadcrumb />
       <h1 className="snake-title">SNAKE</h1>
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="snake-scorebar">
         <span>SCORE: <strong>{score}</strong></span>
@@ -155,6 +179,7 @@ export default function Snake() {
       ╚●`}</pre>
             <p className="snake-over-title">SNAKE</p>
             <p className="snake-over-sub">Eat the red food. Avoid walls and yourself.</p>
+            <DifficultySelector value={difficulty} onChange={(d) => { setDifficulty(d) }} />
             <button className="snake-btn" onClick={startGame}>[ START GAME ]</button>
             <p className="snake-tip">Arrow keys or WASD to move</p>
           </div>
@@ -164,6 +189,7 @@ export default function Snake() {
           <div className="snake-overlay">
             <p className="snake-over-title">GAME OVER</p>
             <p className="snake-over-score">Score: {score} &nbsp;|&nbsp; Level: {level}</p>
+            <DifficultySelector value={difficulty} onChange={(d) => { setDifficulty(d) }} />
             <button className="snake-btn" onClick={startGame}>[ PLAY AGAIN ]</button>
           </div>
         )}

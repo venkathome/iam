@@ -1,7 +1,18 @@
 import { useState, useCallback, useEffect } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
-import { QUESTIONS, AGE_RANGES, CATEGORIES } from '../data/communicateData'
+import DifficultySelector from '../components/DifficultySelector'
+import '../components/DifficultySelector.css'
+import { QUESTIONS, CATEGORIES } from '../data/communicateData'
 import './Communicate.css'
+
+const DIFF_CONFIG = {
+  'very-easy': { ageRange: '4-6',   canReveal: true  },
+  'easy':      { ageRange: '7-9',   canReveal: true  },
+  'medium':    { ageRange: '10-12', canReveal: true  },
+  'hard':      { ageRange: '13-15', canReveal: true  },
+  'very-hard': { ageRange: '16-19', canReveal: true  },
+  'ultimate':  { ageRange: '16-19', canReveal: false },
+}
 
 const SPARK_COLORS = ['#f97316','#ec4899','#a78bfa','#06b6d4','#4ade80','#fbbf24','#fb923c']
 
@@ -59,7 +70,7 @@ function QuestionsIcon() {
 }
 
 export default function Questions() {
-  const [ageRange, setAgeRange] = useState('')
+  const [difficulty, setDifficulty] = useState('medium')
   const [category, setCategory] = useState('')
   const [questions, setQuestions] = useState([])
   const [qIndex, setQIndex] = useState(0)
@@ -72,14 +83,15 @@ export default function Questions() {
   const [savedIds, setSavedIds] = useState(new Set())
 
   useEffect(() => {
-    if (ageRange && category) {
+    if (category) {
+      const ageRange = DIFF_CONFIG[difficulty].ageRange
       const qs = QUESTIONS[ageRange]?.[category] ?? []
       setQuestions(shuffle(qs))
       setQIndex(0)
       setRevealed(false)
       setCardState('idle')
     }
-  }, [ageRange, category])
+  }, [difficulty, category])
 
   useEffect(() => {
     const iv = setInterval(() => setTipIndex(i => (i + 1) % FUN_TIPS.length), 8000)
@@ -104,6 +116,16 @@ export default function Questions() {
   function nextQuestion() { transition(() => setQIndex(i => (i + 1) % questions.length)) }
   function prevQuestion() { transition(() => setQIndex(i => (i - 1 + questions.length) % questions.length)) }
 
+  useEffect(() => {
+    if (!questions.length) return
+    const onKey = (e) => {
+      if (e.key === 'ArrowRight') nextQuestion()
+      else if (e.key === 'ArrowLeft') prevQuestion()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   function shuffleNow() {
     fireSparkles()
     setQuestions(q => shuffle([...q]))
@@ -125,11 +147,12 @@ export default function Questions() {
     }
   }
 
+  const cfg = DIFF_CONFIG[difficulty]
+
   const currentQ = questions[qIndex]
   const catInfo = CATEGORIES.find(c => c.id === category)
-  const ageInfo = AGE_RANGES.find(a => a.id === ageRange)
   const isQforQ = category === 'qForQ'
-  const isRiddle = category === 'riddles'
+  const isRevealable = cfg.canReveal && !isQforQ && currentQ && typeof currentQ === 'object' && !!currentQ.a
   const qKey = currentQ ? typeof currentQ === 'object' ? (currentQ.q || currentQ.starter) : currentQ : null
   const isFaved = qKey ? savedIds.has(qKey) : false
   const tip = FUN_TIPS[tipIndex]
@@ -145,27 +168,18 @@ export default function Questions() {
         <p className="comm-subtitle">Questions, riddles & fun for curious minds 🎉</p>
       </div>
 
-      <div className="comm-age-section">
-        <span className="comm-age-label">Step 1 — Choose your age group</span>
-        <select className="comm-age-select" value={ageRange} onChange={e => { setAgeRange(e.target.value); setCategory('') }}>
-          <option value="">-- Pick an age range --</option>
-          {AGE_RANGES.map(a => <option key={a.id} value={a.id}>{a.emoji} {a.label} · {a.desc}</option>)}
-        </select>
-        {ageInfo && <span className="comm-age-badge">{ageInfo.emoji} {ageInfo.desc} selected!</span>}
-      </div>
+      <DifficultySelector value={difficulty} onChange={d => { setDifficulty(d); setCategory(''); setQuestions([]); setQIndex(0); setRevealed(false) }} />
 
-      {ageRange && (
-        <div className="comm-categories-section">
-          <p className="comm-categories-title">Step 2 — Pick a category</p>
-          <div className="comm-categories-grid">
-            {CATEGORIES.map(cat => (
-              <button key={cat.id} className={`comm-cat-btn ${category === cat.id ? 'active' : ''}`} style={{ '--cat-color': cat.color }} onClick={() => setCategory(cat.id)}>
-                <span className="comm-cat-emoji">{cat.emoji}</span>{cat.label}
-              </button>
-            ))}
-          </div>
+      <div className="comm-categories-section">
+        <p className="comm-categories-title">Pick a category</p>
+        <div className="comm-categories-grid">
+          {CATEGORIES.map(cat => (
+            <button key={cat.id} className={`comm-cat-btn ${category === cat.id ? 'active' : ''}`} style={{ '--cat-color': cat.color }} onClick={() => setCategory(cat.id)}>
+              <span className="comm-cat-emoji">{cat.emoji}</span>{cat.label}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       {questions.length > 0 && catInfo && (
         <div className="comm-card-section">
@@ -177,7 +191,7 @@ export default function Questions() {
             <span>{questions.length}</span>
           </div>
 
-          <div className={`comm-card ${cardState === 'out' ? 'flip-out' : cardState === 'in' ? 'flip-in' : ''}`} style={{ '--cat-color': catInfo.color }} onClick={() => { if (isRiddle && !revealed) setRevealed(true) }}>
+          <div className={`comm-card ${cardState === 'out' ? 'flip-out' : cardState === 'in' ? 'flip-in' : ''}`} style={{ '--cat-color': catInfo.color }} onClick={() => { if (isRevealable && !revealed) setRevealed(true) }}>
             <div className="comm-card-glow" />
             {isQforQ ? (
               <>
@@ -190,9 +204,9 @@ export default function Questions() {
             ) : (
               <>
                 <span className="comm-card-emoji">{catInfo.emoji}</span>
-                <p className="comm-card-question">{isRiddle ? currentQ.q : (typeof currentQ === 'string' ? currentQ : currentQ.q)}</p>
-                {isRiddle && revealed && <div className="comm-card-answer">✅ {currentQ.a}</div>}
-                {isRiddle && !revealed && <span className="comm-card-hint">👆 Tap the card to reveal the answer!</span>}
+                <p className="comm-card-question">{isRevealable ? currentQ.q : (typeof currentQ === 'string' ? currentQ : currentQ.q)}</p>
+                {isRevealable && revealed && <div className="comm-card-answer">✅ {currentQ.a}</div>}
+                {isRevealable && !revealed && <span className="comm-card-hint">👆 Tap to reveal the answer!</span>}
               </>
             )}
           </div>
@@ -206,15 +220,15 @@ export default function Questions() {
         </div>
       )}
 
-      {ageRange && category && questions.length === 0 && (
+      {category && questions.length === 0 && (
         <div className="comm-empty"><div className="comm-empty-icon">🤔</div><h2 className="comm-empty-title">Coming soon!</h2><p className="comm-empty-text">More questions are on their way. Try another category!</p></div>
       )}
 
-      {!ageRange && (
-        <div className="comm-empty"><div className="comm-empty-icon">💬</div><h2 className="comm-empty-title">Let's get talking!</h2><p className="comm-empty-text">Select your age group and pick a category to start exploring hundreds of questions, riddles, and more.</p></div>
+      {!category && (
+        <div className="comm-empty"><div className="comm-empty-icon">💬</div><h2 className="comm-empty-title">Let's get talking!</h2><p className="comm-empty-text">Pick a difficulty and a category to start exploring hundreds of questions, riddles, and more.</p></div>
       )}
 
-      {(!ageRange || !category) && (
+      {!category && (
         <div className="comm-fun-bar" key={tipIndex}>
           <span className="comm-fun-bar-icon">{tip.icon}</span>
           <p className="comm-fun-bar-text" dangerouslySetInnerHTML={{ __html: tip.text }} />

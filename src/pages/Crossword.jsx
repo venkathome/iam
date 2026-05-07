@@ -1,11 +1,23 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Crossword.css'
+
+const HOW_TO_PLAY = [
+  'Click a white square to select it — the highlighted row or column shows your current direction.',
+  'Click the same square again to switch between typing across and typing down.',
+  'Type a letter to fill in the square, then move to the next automatically.',
+  'Use the across and down clues to find the right words.',
+  'Fill every square correctly to complete the puzzle!',
+]
 
 // '#' = black cell, letter = solution letter
 const PUZZLES = [
   {
     title: 'Puzzle 1',
+    difficulty: 'very-easy',
     solution: [
       ['#','C','A','K','E'],
       ['#','L','#','#','#'],
@@ -25,6 +37,7 @@ const PUZZLES = [
   },
   {
     title: 'Puzzle 2',
+    difficulty: 'easy',
     solution: [
       ['B','R','E','A','D'],
       ['#','A','#','#','#'],
@@ -44,6 +57,7 @@ const PUZZLES = [
   },
   {
     title: 'Puzzle 3',
+    difficulty: 'hard',
     solution: [
       ['#','#','S','#','#'],
       ['F','L','A','M','E'],
@@ -62,6 +76,7 @@ const PUZZLES = [
   },
   {
     title: 'Puzzle 4',
+    difficulty: 'ultimate',
     solution: [
       ['#','M','O','O','N'],
       ['#','A','#','W','#'],
@@ -141,9 +156,15 @@ function directionAt(solution, r, c) {
   return 'across'
 }
 
+const DIFF_ORDER = ['very-easy', 'easy', 'medium', 'hard', 'very-hard', 'ultimate']
+
 export default function Crossword() {
+  const [difficulty, setDifficulty] = useState('very-easy')
+  const visiblePuzzles = PUZZLES.filter(p =>
+    DIFF_ORDER.indexOf(p.difficulty) <= DIFF_ORDER.indexOf(difficulty)
+  )
   const [puzzleIdx, setPuzzleIdx] = useState(0)
-  const puzzle = PUZZLES[puzzleIdx]
+  const puzzle = visiblePuzzles[Math.min(puzzleIdx, visiblePuzzles.length - 1)]
   const { solution, clues } = puzzle
   const numbering = buildNumbering(solution)
   const size = solution.length
@@ -161,7 +182,7 @@ export default function Crossword() {
     setDirection('across')
     setChecked(false)
     setRevealed(false)
-  }, [puzzleIdx])
+  }, [puzzle])
 
   const activeWord = selected
     ? (() => {
@@ -293,8 +314,11 @@ export default function Crossword() {
       <Breadcrumb />
       <h1>Crossword</h1>
 
+      <DifficultySelector value={difficulty} onChange={d => { setDifficulty(d); setPuzzleIdx(0) }} />
+      <HowToPlay steps={HOW_TO_PLAY} />
+
       <div className="cw-puzzle-tabs">
-        {PUZZLES.map((p, i) => (
+        {visiblePuzzles.map((p, i) => (
           <button key={i} className={`cw-tab ${i === puzzleIdx ? 'cw-tab--active' : ''}`}
             onClick={() => setPuzzleIdx(i)}>{p.title}</button>
         ))}

@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './TicTacToe.css'
+
+const HOW_TO_PLAY = [
+  'Two players take turns — X goes first, then O.',
+  'Click any empty square to place your mark.',
+  'Get three of your marks in a row to win — across, down, or diagonally.',
+  "If all squares are filled with no winner, it's a draw!",
+  'Play vs the computer or pass the device back and forth with a friend.',
+]
 
 const STORAGE_KEY = 'iam-ttt-history'
 const COLORS = { X: '#a78bfa', O: '#fb923c', win: '#4ade80', draw: '#f59e0b' }
@@ -100,27 +111,39 @@ function getBestMove(board, size, difficulty, aiSym, humanSym) {
   for (let i = 0; i < board.length; i++) if (!board[i]) empty.push(i)
   if (empty.length === 0) return -1
 
-  // Always take immediate win
+  // Very Easy: fully random, never blocks or wins strategically
+  if (difficulty === 'very-easy') {
+    return empty[Math.floor(Math.random() * empty.length)]
+  }
+
+  // Easy+: always take an immediate win
   const winMove = findWinningMove(board, size, aiSym)
   if (winMove >= 0) return winMove
 
-  // Easy: random, no blocking
+  // Easy: random after checking win (no blocking)
   if (difficulty === 'easy') {
     return empty[Math.floor(Math.random() * empty.length)]
   }
 
-  // Medium + Hard: block opponent's immediate win
+  // Medium+: block opponent's immediate win
   const blockMove = findWinningMove(board, size, humanSym)
   if (blockMove >= 0) return blockMove
 
-  // Medium: occasionally random after blocking
-  if (difficulty === 'medium' && Math.random() < 0.4) {
+  // Medium: often random after blocking
+  if (difficulty === 'medium' && Math.random() < 0.5) {
     return empty[Math.floor(Math.random() * empty.length)]
   }
 
-  const depth = difficulty === 'hard'
-    ? (size === 3 ? 9 : size === 4 ? 5 : 3)
-    : (size === 3 ? 4 : 2)
+  // Hard: occasionally random
+  if (difficulty === 'hard' && Math.random() < 0.25) {
+    return empty[Math.floor(Math.random() * empty.length)]
+  }
+
+  const depth =
+    difficulty === 'ultimate'  ? (size === 3 ? 9 : size === 4 ? 7 : 5) :
+    difficulty === 'very-hard' ? (size === 3 ? 9 : size === 4 ? 5 : 3) :
+    difficulty === 'hard'      ? (size === 3 ? 6 : size === 4 ? 4 : 2) :
+                                  (size === 3 ? 3 : 2)
 
   const workBoard = [...board]
   let bestScore = -Infinity
@@ -332,6 +355,8 @@ export default function TicTacToe() {
     <div className="ttt-page">
       <Breadcrumb />
 
+      <HowToPlay steps={HOW_TO_PLAY} />
+
       <div className="ttt-tabs">
         {[{ key: 'game', label: 'Game' }, { key: 'history', label: 'Stats & History' }].map(t => (
           <button
@@ -400,22 +425,7 @@ export default function TicTacToe() {
               {vsComputer ? (
                 <>
                   <p className="ttt-section-title" style={{ marginTop: '1.25rem' }}>Difficulty</p>
-                  <div className="ttt-diff-row">
-                    {[
-                      { key: 'easy',   label: 'Easy',   hint: 'Random moves' },
-                      { key: 'medium', label: 'Medium', hint: 'Makes mistakes' },
-                      { key: 'hard',   label: 'Hard',   hint: 'Near perfect' },
-                    ].map(({ key, label, hint }) => (
-                      <button
-                        key={key}
-                        className={`ttt-diff-chip ${difficulty === key ? 'ttt-diff-chip-active' : ''}`}
-                        onClick={() => setDifficulty(key)}
-                      >
-                        <span className="ttt-size-label">{label}</span>
-                        <span className="ttt-size-hint">{hint}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <DifficultySelector value={difficulty} onChange={setDifficulty} />
                 </>
               ) : (
                 <div className="ttt-player-row">

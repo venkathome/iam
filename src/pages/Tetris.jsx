@@ -1,6 +1,27 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Tetris.css'
+
+const HOW_TO_PLAY = [
+  'Colorful pieces fall from the top of the board.',
+  'Use ← → to move a piece left or right.',
+  'Press ↑ to rotate the piece.',
+  'Press ↓ to drop it faster.',
+  'Fill a complete horizontal row to clear it and earn points.',
+  "Don't let the pieces stack up to the top — that's game over!",
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { initInterval: 900 },
+  'easy':      { initInterval: 600 },
+  'medium':    { initInterval: 400 },
+  'hard':      { initInterval: 250 },
+  'very-hard': { initInterval: 160 },
+  'ultimate':  { initInterval: 80  },
+}
 
 const COLS = 10
 const ROWS = 20
@@ -123,6 +144,7 @@ function getPieceCells(type, rot, px, py) {
 }
 
 export default function Tetris() {
+  const [difficulty, setDifficulty] = useState('medium')
   const [board, setBoard]       = useState(emptyBoard)
   const [piece, setPiece]       = useState(null)
   const [nextType, setNextType] = useState(() => randomType())
@@ -176,11 +198,11 @@ export default function Tetris() {
       clearInterval(intervalRef.current)
       return
     }
-    const speed = Math.max(100, 800 - level * 70)
+    const speed = Math.max(100, DIFF_CONFIG[difficulty].initInterval - level * 70)
     clearInterval(intervalRef.current)
     intervalRef.current = setInterval(tick, speed)
     return () => clearInterval(intervalRef.current)
-  }, [started, gameOver, paused, level, tick])
+  }, [started, gameOver, paused, level, tick, difficulty])
 
   useEffect(() => {
     function onKey(e) {
@@ -261,6 +283,7 @@ export default function Tetris() {
     <div className="tetris-page">
       <Breadcrumb />
       <h1 className="tetris-title">TETRIS</h1>
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="tetris-layout">
         <div className="tetris-board-wrap">
@@ -287,6 +310,7 @@ export default function Tetris() {
               {!started && (
                 <>
                   <p className="overlay-title">TETRIS</p>
+                  <DifficultySelector value={difficulty} onChange={(d) => { setDifficulty(d) }} />
                   <button className="overlay-btn" onClick={startGame}>PRESS START</button>
                 </>
               )}
@@ -294,6 +318,7 @@ export default function Tetris() {
                 <>
                   <p className="overlay-title">GAME OVER</p>
                   <p className="overlay-sub">Score: {score}</p>
+                  <DifficultySelector value={difficulty} onChange={(d) => { setDifficulty(d) }} />
                   <button className="overlay-btn" onClick={startGame}>PLAY AGAIN</button>
                 </>
               )}

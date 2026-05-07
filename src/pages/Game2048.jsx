@@ -1,15 +1,35 @@
 import { useState, useEffect, useRef } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Game2048.css'
 
-function emptyGrid() {
-  return Array(4).fill(null).map(() => Array(4).fill(0))
+const HOW_TO_PLAY = [
+  'Use the arrow keys to slide all tiles in one direction.',
+  'When two tiles with the same number touch, they merge into one.',
+  'Keep merging tiles to reach the target number — 2048!',
+  'The game ends when no more moves are possible.',
+  'Tip: try to keep your highest tile in a corner.',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { size: 3, target: 512  },
+  'easy':      { size: 4, target: 1024 },
+  'medium':    { size: 4, target: 2048 },
+  'hard':      { size: 5, target: 2048 },
+  'very-hard': { size: 5, target: 4096 },
+  'ultimate':  { size: 6, target: 4096 },
 }
 
-function addTile(grid) {
+function emptyGrid(size) {
+  return Array(size).fill(null).map(() => Array(size).fill(0))
+}
+
+function addTile(grid, size) {
   const empty = []
-  for (let r = 0; r < 4; r++)
-    for (let c = 0; c < 4; c++)
+  for (let r = 0; r < size; r++)
+    for (let c = 0; c < size; c++)
       if (grid[r][c] === 0) empty.push([r, c])
   if (!empty.length) return grid
   const [r, c] = empty[Math.floor(Math.random() * empty.length)]
@@ -18,11 +38,11 @@ function addTile(grid) {
   return next
 }
 
-function startGrid() {
-  return addTile(addTile(emptyGrid()))
+function startGrid(size) {
+  return addTile(addTile(emptyGrid(size), size), size)
 }
 
-function slideRow(row) {
+function slideRow(row, size) {
   const vals = row.filter(v => v !== 0)
   const out = []
   let score = 0
@@ -37,24 +57,24 @@ function slideRow(row) {
       i++
     }
   }
-  while (out.length < 4) out.push(0)
+  while (out.length < size) out.push(0)
   return { row: out, score }
 }
 
-function applyLeft(grid) {
+function applyLeft(grid, size) {
   let score = 0
   const next = grid.map(row => {
-    const { row: r, score: s } = slideRow(row)
+    const { row: r, score: s } = slideRow(row, size)
     score += s
     return r
   })
   return { grid: next, score }
 }
 
-function applyRight(grid) {
+function applyRight(grid, size) {
   let score = 0
   const next = grid.map(row => {
-    const { row: r, score: s } = slideRow([...row].reverse())
+    const { row: r, score: s } = slideRow([...row].reverse(), size)
     score += s
     return r.reverse()
   })
@@ -65,13 +85,13 @@ function transpose(g) {
   return g[0].map((_, c) => g.map(row => row[c]))
 }
 
-function applyUp(grid) {
-  const { grid: g, score } = applyLeft(transpose(grid))
+function applyUp(grid, size) {
+  const { grid: g, score } = applyLeft(transpose(grid), size)
   return { grid: transpose(g), score }
 }
 
-function applyDown(grid) {
-  const { grid: g, score } = applyRight(transpose(grid))
+function applyDown(grid, size) {
+  const { grid: g, score } = applyRight(transpose(grid), size)
   return { grid: transpose(g), score }
 }
 
@@ -79,12 +99,12 @@ function gridsEqual(a, b) {
   return a.every((row, r) => row.every((v, c) => v === b[r][c]))
 }
 
-function isGameOver(grid) {
+function isGameOver(grid, size) {
   if (grid.some(row => row.some(v => v === 0))) return false
-  for (let r = 0; r < 4; r++)
-    for (let c = 0; c < 4; c++) {
-      if (c + 1 < 4 && grid[r][c] === grid[r][c + 1]) return false
-      if (r + 1 < 4 && grid[r][c] === grid[r + 1][c]) return false
+  for (let r = 0; r < size; r++)
+    for (let c = 0; c < size; c++) {
+      if (c + 1 < size && grid[r][c] === grid[r][c + 1]) return false
+      if (r + 1 < size && grid[r][c] === grid[r + 1][c]) return false
     }
   return true
 }
@@ -115,25 +135,44 @@ function fontSize(v) {
 }
 
 export default function Game2048() {
-  const [grid, setGrid]   = useState(startGrid)
+  const [difficulty, setDifficulty] = useState('medium')
+  const size = DIFF_CONFIG[difficulty].size
+  const target = DIFF_CONFIG[difficulty].target
+
+  const [grid, setGrid]   = useState(() => startGrid(DIFF_CONFIG['medium'].size))
   const [score, setScore] = useState(0)
   const [best, setBest]   = useState(() => +localStorage.getItem('2048-best') || 0)
   const [won, setWon]     = useState(false)
   const [keepGoing, setKeepGoing] = useState(false)
   const [over, setOver]   = useState(false)
 
-  const stateRef = useRef({ grid, score, won, keepGoing, over })
-  useEffect(() => { stateRef.current = { grid, score, won, keepGoing, over } })
+  const cellPx = size <= 3 ? 96 : size === 4 ? 76 : size === 5 ? 60 : 50
+
+  const stateRef = useRef({ grid, score, won, keepGoing, over, size, target })
+  useEffect(() => { stateRef.current = { grid, score, won, keepGoing, over, size, target } })
+
+  function restart(sz, tgt) {
+    setGrid(startGrid(sz))
+    setScore(0)
+    setWon(false)
+    setKeepGoing(false)
+    setOver(false)
+  }
 
   function doMove(direction) {
-    const { grid: g, score: sc, won: w, keepGoing: kg, over: ov } = stateRef.current
+    const { grid: g, score: sc, won: w, keepGoing: kg, over: ov, size: sz, target: tgt } = stateRef.current
     if (ov || (w && !kg)) return
 
-    const fns = { left: applyLeft, right: applyRight, up: applyUp, down: applyDown }
+    const fns = {
+      left:  (gr) => applyLeft(gr, sz),
+      right: (gr) => applyRight(gr, sz),
+      up:    (gr) => applyUp(gr, sz),
+      down:  (gr) => applyDown(gr, sz),
+    }
     const { grid: moved, score: gained } = fns[direction](g)
     if (gridsEqual(moved, g)) return
 
-    const next = addTile(moved)
+    const next = addTile(moved, sz)
     const newScore = sc + gained
 
     setGrid(next)
@@ -143,8 +182,8 @@ export default function Game2048() {
       localStorage.setItem('2048-best', String(nb))
       return nb
     })
-    if (!w && next.some(row => row.some(v => v >= 2048))) setWon(true)
-    if (isGameOver(next)) setOver(true)
+    if (!w && next.some(row => row.some(v => v >= tgt))) setWon(true)
+    if (isGameOver(next, sz)) setOver(true)
   }
 
   useEffect(() => {
@@ -155,14 +194,6 @@ export default function Game2048() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
-
-  function restart() {
-    setGrid(startGrid())
-    setScore(0)
-    setWon(false)
-    setKeepGoing(false)
-    setOver(false)
-  }
 
   return (
     <div className="g2048-page">
@@ -178,15 +209,24 @@ export default function Game2048() {
         </div>
       </div>
 
-      <button className="g2048-new-btn" onClick={restart}>New Game</button>
+      <DifficultySelector
+        value={difficulty}
+        onChange={(d) => { setDifficulty(d); restart(DIFF_CONFIG[d].size, DIFF_CONFIG[d].target) }}
+      />
+      <HowToPlay steps={HOW_TO_PLAY} />
+
+      <button className="g2048-new-btn" onClick={() => restart(size, target)}>New Game</button>
 
       <div className="g2048-board-wrap">
-        <div className="g2048-board">
+        <div
+          className="g2048-board"
+          style={{ gridTemplateColumns: `repeat(${size}, ${cellPx}px)`, gridTemplateRows: `repeat(${size}, ${cellPx}px)` }}
+        >
           {grid.map((row, r) => row.map((v, c) => {
             const { bg, color } = tileStyle(v)
             return (
               <div key={`${r}-${c}`} className={`g2048-cell ${v ? 'g2048-cell--filled' : ''}`}
-                style={{ background: bg, color }}>
+                style={{ background: bg, color, width: cellPx, height: cellPx }}>
                 {v !== 0 && <span style={{ fontSize: fontSize(v) }}>{v}</span>}
               </div>
             )
@@ -195,10 +235,10 @@ export default function Game2048() {
 
         {won && !keepGoing && (
           <div className="g2048-overlay g2048-overlay--won">
-            <p>🎉 You reached 2048!</p>
+            <p>🎉 You reached {target}!</p>
             <div className="g2048-overlay-btns">
               <button onClick={() => setKeepGoing(true)}>Keep going</button>
-              <button onClick={restart}>New game</button>
+              <button onClick={() => restart(size, target)}>New game</button>
             </div>
           </div>
         )}
@@ -206,7 +246,7 @@ export default function Game2048() {
           <div className="g2048-overlay g2048-overlay--over">
             <p>Game Over</p>
             <p className="g2048-final-score">Score: {score}</p>
-            <button onClick={restart}>Try again</button>
+            <button onClick={() => restart(size, target)}>Try again</button>
           </div>
         )}
       </div>

@@ -1,13 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './SpaceInvaders.css'
+
+const HOW_TO_PLAY = [
+  'Move your ship left and right using the arrow keys.',
+  'Press Space to fire a laser at the aliens above.',
+  'Shoot all the aliens before they reach the bottom.',
+  'Watch out — aliens speed up as you clear each wave!',
+  'Use the shields (if present) to block incoming fire.',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { alienRows: 3, alienCols: 8,  alienTickMax: 50 },
+  'easy':      { alienRows: 4, alienCols: 9,  alienTickMax: 40 },
+  'medium':    { alienRows: 5, alienCols: 11, alienTickMax: 30 },
+  'hard':      { alienRows: 6, alienCols: 11, alienTickMax: 22 },
+  'very-hard': { alienRows: 7, alienCols: 11, alienTickMax: 16 },
+  'ultimate':  { alienRows: 8, alienCols: 11, alienTickMax: 11 },
+}
 
 const W = 480, H = 540
 const PLAYER_W = 36, PLAYER_H = 20
 const BULLET_W = 3, BULLET_H = 10
-const ALIEN_COLS = 11, ALIEN_ROWS = 5
 const ALIEN_W = 32, ALIEN_H = 24, ALIEN_GAP_X = 10, ALIEN_GAP_Y = 12
-const ALIEN_START_X = (W - (ALIEN_COLS * (ALIEN_W + ALIEN_GAP_X))) / 2
 const ALIEN_START_Y = 60
 const PLAYER_BULLET_SPEED = 7
 const ALIEN_BULLET_SPEED = 3
@@ -43,12 +61,12 @@ const ALIEN_SHAPES = [
   },
 ]
 
-const ALIEN_COLORS = ['#ff4444', '#ff9800', '#ff9800', '#4caf50', '#4caf50']
+const ALIEN_COLORS = ['#ff4444', '#ff9800', '#ff9800', '#4caf50', '#4caf50', '#00bcd4', '#e040fb', '#8bc34a']
 
-function makeAliens() {
+function makeAliens(alienRows, alienCols) {
   const aliens = []
-  for (let r = 0; r < ALIEN_ROWS; r++)
-    for (let c = 0; c < ALIEN_COLS; c++)
+  for (let r = 0; r < alienRows; r++)
+    for (let c = 0; c < alienCols; c++)
       aliens.push({ r, c, alive: true, frame: 0 })
   return aliens
 }
@@ -64,21 +82,28 @@ export default function SpaceInvaders() {
   const canvasRef = useRef(null)
   const stateRef  = useRef(null)
   const rafRef    = useRef(null)
+  const diffRef   = useRef('medium')
+  const [difficulty, setDifficulty] = useState('medium')
   const [phase, setPhase] = useState('idle')
   const [score, setScore] = useState(0)
   const [lives, setLives] = useState(3)
   const [hiScore, setHiScore] = useState(0)
 
-  function initState() {
+  function initState(cfg = DIFF_CONFIG[diffRef.current]) {
+    const alienStartX = (W - (cfg.alienCols * (ALIEN_W + ALIEN_GAP_X))) / 2
     return {
       playerX: W / 2 - PLAYER_W / 2,
       bullets: [],
       alienBullets: [],
-      aliens: makeAliens(),
+      aliens: makeAliens(cfg.alienRows, cfg.alienCols),
       alienDX: 1.2,
       alienFrame: 0,
       alienTick: 0,
-      alienTickMax: 30,
+      alienTickMax: cfg.alienTickMax,
+      initAlienTickMax: cfg.alienTickMax,
+      alienCols: cfg.alienCols,
+      alienRows: cfg.alienRows,
+      alienStartX,
       score: 0,
       lives: 3,
       phase: 'playing',
@@ -88,18 +113,11 @@ export default function SpaceInvaders() {
     }
   }
 
-  function alienPos(a, aliens, alienDX) {
-    const alive = aliens.filter(x => x.alive)
-    const minC = Math.min(...alive.map(x => x.c))
-    const maxC = Math.max(...alive.map(x => x.c))
-    const minR = Math.min(...alive.map(x => x.r))
-    const dx = (alienDX > 0 ? 0 : (ALIEN_COLS - 1 - maxC + minC) * (ALIEN_W + ALIEN_GAP_X) * 0)
-    void dx
-    const baseX = ALIEN_START_X
-    const baseY = ALIEN_START_Y + (minR === 0 ? 0 : 0)
+  function alienPos(a) {
+    const s = stateRef.current
     return {
-      x: baseX + a.c * (ALIEN_W + ALIEN_GAP_X) + (stateRef.current?.alienOffsetX ?? 0),
-      y: baseY + a.r * (ALIEN_H + ALIEN_GAP_Y) + (stateRef.current?.alienOffsetY ?? 0),
+      x: (s?.alienStartX ?? 0) + a.c * (ALIEN_W + ALIEN_GAP_X) + (s?.alienOffsetX ?? 0),
+      y: ALIEN_START_Y + a.r * (ALIEN_H + ALIEN_GAP_Y) + (s?.alienOffsetY ?? 0),
     }
   }
 
@@ -112,7 +130,7 @@ export default function SpaceInvaders() {
     // aliens
     s.aliens.forEach(a => {
       if (!a.alive) return
-      const x = ALIEN_START_X + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX
+      const x = s.alienStartX + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX
       const y = ALIEN_START_Y + a.r * (ALIEN_H + ALIEN_GAP_Y) + s.alienOffsetY
       ctx.fillStyle = ALIEN_COLORS[a.r]
       ctx.shadowColor = ALIEN_COLORS[a.r]
@@ -189,8 +207,8 @@ export default function SpaceInvaders() {
       const alive = s.aliens.filter(a => a.alive)
       if (!alive.length) return
 
-      const leftMost  = Math.min(...alive.map(a => ALIEN_START_X + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX))
-      const rightMost = Math.max(...alive.map(a => ALIEN_START_X + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX + ALIEN_W))
+      const leftMost  = Math.min(...alive.map(a => s.alienStartX + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX))
+      const rightMost = Math.max(...alive.map(a => s.alienStartX + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX + ALIEN_W))
 
       let drop = false
       if (rightMost + s.alienDX * 16 > W - 8) { s.alienDX = -Math.abs(s.alienDX); drop = true }
@@ -202,19 +220,20 @@ export default function SpaceInvaders() {
       // alien bullet
       if (Math.random() < 0.35) {
         const bottom = []
-        for (let c = 0; c < ALIEN_COLS; c++) {
+        for (let c = 0; c < s.alienCols; c++) {
           const col = alive.filter(a => a.c === c)
           if (col.length) bottom.push(col.reduce((a, b) => (a.r > b.r ? a : b)))
         }
         if (bottom.length) {
           const shooter = bottom[Math.floor(Math.random() * bottom.length)]
-          const sx = ALIEN_START_X + shooter.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX + ALIEN_W / 2
+          const sx = s.alienStartX + shooter.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX + ALIEN_W / 2
           const sy = ALIEN_START_Y + shooter.r * (ALIEN_H + ALIEN_GAP_Y) + s.alienOffsetY + ALIEN_H
           s.alienBullets.push({ x: sx, y: sy })
         }
       }
 
-      s.alienTickMax = Math.max(6, 30 - (s.aliens.filter(a => !a.alive).length * 0.4))
+      const totalAliens = s.alienRows * s.alienCols
+      s.alienTickMax = Math.max(6, s.initAlienTickMax - (s.aliens.filter(a => !a.alive).length / totalAliens) * (s.initAlienTickMax - 6))
     }
 
     // move alien bullets
@@ -225,12 +244,12 @@ export default function SpaceInvaders() {
     s.bullets.forEach(b => {
       s.aliens.forEach(a => {
         if (!a.alive) return
-        const ax = ALIEN_START_X + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX
+        const ax = s.alienStartX + a.c * (ALIEN_W + ALIEN_GAP_X) + s.alienOffsetX
         const ay = ALIEN_START_Y + a.r * (ALIEN_H + ALIEN_GAP_Y) + s.alienOffsetY
         if (b.x >= ax && b.x <= ax + ALIEN_W && b.y <= ay + ALIEN_H && b.y >= ay) {
           a.alive = false
           b.y = -100
-          s.score += (ALIEN_ROWS - a.r) * 10
+          s.score += (s.alienRows - a.r) * 10
           setScore(s.score)
         }
       })
@@ -252,7 +271,7 @@ export default function SpaceInvaders() {
     })
 
     // alien reaches bottom
-    if (s.aliens.some(a => a.alive && ALIEN_START_Y + a.r * (ALIEN_H + ALIEN_GAP_Y) + s.alienOffsetY + ALIEN_H > H - 30)) {
+    if (s.aliens.some(a => a.alive && ALIEN_START_Y + a.r * (ALIEN_H + ALIEN_GAP_Y) + s.alienOffsetY + ALIEN_H > H - 30) && s.phase === 'playing') {
       s.phase = 'lost'
       setHiScore(h => Math.max(h, s.score))
       setPhase('lost')
@@ -271,7 +290,7 @@ export default function SpaceInvaders() {
 
   function startGame() {
     cancelAnimationFrame(rafRef.current)
-    const s = { ...initState(), alienOffsetX: 0, alienOffsetY: 0 }
+    const s = { ...initState(DIFF_CONFIG[diffRef.current]), alienOffsetX: 0, alienOffsetY: 0 }
     stateRef.current = s
     setPhase('playing')
     setScore(0)
@@ -318,6 +337,7 @@ export default function SpaceInvaders() {
     <div className="si-page">
       <Breadcrumb />
       <h1 className="si-title">SPACE INVADERS</h1>
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="si-wrap">
         <canvas ref={canvasRef} width={W} height={H} className="si-canvas" />
@@ -327,6 +347,7 @@ export default function SpaceInvaders() {
             {phase === 'won'  && <p className="si-over-title si-over-title--win">YOU WIN!</p>}
             {phase === 'idle' && <p className="si-over-title">SPACE INVADERS</p>}
             {phase !== 'idle' && <p className="si-over-sub">Score: {score}</p>}
+            <DifficultySelector value={difficulty} onChange={(d) => { diffRef.current = d; setDifficulty(d) }} />
             <button className="si-btn" onClick={startGame}>
               {phase === 'idle' ? '[ START GAME ]' : '[ PLAY AGAIN ]'}
             </button>

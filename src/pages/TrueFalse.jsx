@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './TrueFalse.css'
+
+const HOW_TO_PLAY = [
+  'A statement appears on the screen.',
+  'Decide whether it is True or False.',
+  'Tap the correct button to score a point.',
+  'Build a streak of correct answers for bonus bragging rights!',
+]
 
 const STATEMENTS = [
   { text: 'The Great Wall of China is visible from space with the naked eye.', answer: false, explanation: 'It is too narrow to be seen from space without aid.' },
@@ -37,6 +47,15 @@ const STATEMENTS = [
   { text: 'There are more stars in the universe than grains of sand on all of Earth\'s beaches.', answer: true, explanation: 'Estimates put the number of stars at around 10²⁴ — exceeding the estimated number of grains of sand.' },
 ]
 
+const DIFF_CONFIG = {
+  'very-easy': { timePerQuestion: 0,  statementsCount: 15 },
+  'easy':      { timePerQuestion: 0,  statementsCount: 20 },
+  'medium':    { timePerQuestion: 0,  statementsCount: 25 },
+  'hard':      { timePerQuestion: 8,  statementsCount: 25 },
+  'very-hard': { timePerQuestion: 5,  statementsCount: 30 },
+  'ultimate':  { timePerQuestion: 3,  statementsCount: 30 },
+}
+
 function shuffle(arr) {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -46,16 +65,23 @@ function shuffle(arr) {
   return a
 }
 
+function makeQuestions(count) {
+  return shuffle(STATEMENTS).slice(0, Math.min(count, STATEMENTS.length))
+}
+
 export default function TrueFalse() {
-  const [questions]    = useState(() => shuffle(STATEMENTS))
+  const [difficulty, setDifficulty] = useState('medium')
+  const [questions, setQuestions]   = useState(() => makeQuestions(DIFF_CONFIG['medium'].statementsCount))
   const [index, setIndex]           = useState(0)
   const [score, setScore]           = useState(0)
   const [streak, setStreak]         = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
-  const [feedback, setFeedback]     = useState(null) // null | { correct, explanation }
+  const [feedback, setFeedback]     = useState(null)
   const [done, setDone]             = useState(false)
   const [advancing, setAdvancing]   = useState(false)
+  const [timeLeft, setTimeLeft]     = useState(DIFF_CONFIG['medium'].timePerQuestion)
 
+  const cfg = DIFF_CONFIG[difficulty]
   const current = questions[index]
 
   const advance = useCallback(() => {
@@ -65,8 +91,11 @@ export default function TrueFalse() {
       setIndex(i => i + 1)
       setFeedback(null)
       setAdvancing(false)
+      if (cfg.timePerQuestion > 0) {
+        setTimeLeft(cfg.timePerQuestion)
+      }
     }
-  }, [index, questions.length])
+  }, [index, questions.length, cfg.timePerQuestion])
 
   useEffect(() => {
     if (feedback && !advancing) {
@@ -75,6 +104,17 @@ export default function TrueFalse() {
       return () => clearTimeout(t)
     }
   }, [feedback, advancing, advance])
+
+  useEffect(() => {
+    if (cfg.timePerQuestion === 0 || feedback || advancing || done) return
+    if (timeLeft <= 0) {
+      setStreak(0)
+      setFeedback({ correct: false, explanation: current.explanation, timedOut: true })
+      return
+    }
+    const id = setTimeout(() => setTimeLeft(t => t - 1), 1000)
+    return () => clearTimeout(id)
+  }, [cfg.timePerQuestion, timeLeft, feedback, advancing, done, current])
 
   function answer(choice) {
     if (feedback || advancing) return
@@ -87,16 +127,31 @@ export default function TrueFalse() {
     } else {
       setStreak(0)
     }
-    setFeedback({ correct, explanation: current.explanation })
+    setFeedback({ correct, explanation: current.explanation, timedOut: false })
   }
 
   function restart() {
+    setQuestions(makeQuestions(cfg.statementsCount))
     setIndex(0)
     setScore(0)
     setStreak(0)
     setFeedback(null)
     setDone(false)
     setAdvancing(false)
+    setTimeLeft(cfg.timePerQuestion)
+  }
+
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    const newCfg = DIFF_CONFIG[d]
+    setQuestions(makeQuestions(newCfg.statementsCount))
+    setIndex(0)
+    setScore(0)
+    setStreak(0)
+    setFeedback(null)
+    setDone(false)
+    setAdvancing(false)
+    setTimeLeft(newCfg.timePerQuestion)
   }
 
   if (done) {
@@ -104,6 +159,7 @@ export default function TrueFalse() {
     return (
       <div className="tf-page">
         <Breadcrumb />
+        <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
         <div className="tf-summary">
           <h1>Well played!</h1>
           <div className="tf-summary-score">
@@ -125,6 +181,8 @@ export default function TrueFalse() {
   return (
     <div className="tf-page">
       <Breadcrumb />
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
       <div className="tf-top">
         <h1>True or False</h1>
         <div className="tf-scoreboard">
@@ -140,12 +198,24 @@ export default function TrueFalse() {
       </div>
       <p className="tf-counter">Question {index + 1} of {questions.length}</p>
 
+      {cfg.timePerQuestion > 0 && !feedback && (
+        <div className="tf-timer">
+          <div
+            className={`tf-timer-fill${timeLeft <= 2 ? ' tf-timer-fill--urgent' : ''}`}
+            style={{ width: `${(timeLeft / cfg.timePerQuestion) * 100}%` }}
+          />
+          <span className="tf-timer-label">{timeLeft}s</span>
+        </div>
+      )}
+
       <div className={`tf-card ${feedback ? (feedback.correct ? 'tf-card--correct' : 'tf-card--wrong') : ''}`}>
         <p className="tf-statement">{current.text}</p>
 
         {feedback && (
           <div className="tf-feedback">
-            <p className="tf-verdict">{feedback.correct ? '✓ Correct!' : '✗ Wrong!'}</p>
+            <p className="tf-verdict">
+              {feedback.timedOut ? '⏰ Time\'s up!' : (feedback.correct ? '✓ Correct!' : '✗ Wrong!')}
+            </p>
             <p className="tf-explanation">{feedback.explanation}</p>
           </div>
         )}

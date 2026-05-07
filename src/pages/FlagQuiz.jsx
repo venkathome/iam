@@ -1,6 +1,16 @@
 import { useState, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './FlagQuiz.css'
+
+const HOW_TO_PLAY = [
+  "A country's flag appears on screen.",
+  'Pick the correct country name from the choices given.',
+  'Score a point for each flag you identify correctly.',
+  'How many flags of the world do you recognize?',
+]
 
 const COUNTRIES = [
   { flag: '🇬🇧', name: 'United Kingdom' },
@@ -55,7 +65,14 @@ const COUNTRIES = [
   { flag: '🇧🇩', name: 'Bangladesh' },
 ]
 
-const QUESTIONS_PER_GAME = 10
+const DIFF_CONFIG = {
+  'very-easy': { questionsPerGame: 8,  choices: 3, showCountryName: true  },
+  'easy':      { questionsPerGame: 10, choices: 4, showCountryName: false },
+  'medium':    { questionsPerGame: 12, choices: 4, showCountryName: false },
+  'hard':      { questionsPerGame: 15, choices: 4, showCountryName: false },
+  'very-hard': { questionsPerGame: 18, choices: 5, showCountryName: false },
+  'ultimate':  { questionsPerGame: 20, choices: 6, showCountryName: false },
+}
 
 function shuffle(arr) {
   const a = [...arr]
@@ -66,22 +83,24 @@ function shuffle(arr) {
   return a
 }
 
-function buildGame() {
-  const questions = shuffle(COUNTRIES).slice(0, QUESTIONS_PER_GAME)
+function buildGame(cfg) {
+  const questions = shuffle(COUNTRIES).slice(0, cfg.questionsPerGame)
   return questions.map(correct => {
-    const others = shuffle(COUNTRIES.filter(c => c.name !== correct.name)).slice(0, 3)
+    const others = shuffle(COUNTRIES.filter(c => c.name !== correct.name)).slice(0, cfg.choices - 1)
     const choices = shuffle([correct, ...others])
     return { correct, choices }
   })
 }
 
 export default function FlagQuiz() {
-  const [questions, setQuestions] = useState(buildGame)
+  const [difficulty, setDifficulty] = useState('medium')
+  const [questions, setQuestions] = useState(() => buildGame(DIFF_CONFIG['medium']))
   const [qIndex, setQIndex]       = useState(0)
   const [score, setScore]         = useState(0)
   const [chosen, setChosen]       = useState(null)
   const [done, setDone]           = useState(false)
 
+  const cfg = DIFF_CONFIG[difficulty]
   const question = questions[qIndex]
 
   const pick = useCallback((country) => {
@@ -90,17 +109,27 @@ export default function FlagQuiz() {
     const correct = country.name === question.correct.name
     if (correct) setScore(s => s + 1)
     setTimeout(() => {
-      if (qIndex + 1 >= QUESTIONS_PER_GAME) {
+      if (qIndex + 1 >= questions.length) {
         setDone(true)
       } else {
         setQIndex(i => i + 1)
         setChosen(null)
       }
     }, correct ? 1000 : 1500)
-  }, [chosen, qIndex, question])
+  }, [chosen, qIndex, question, questions.length])
 
   function restart() {
-    setQuestions(buildGame())
+    setQuestions(buildGame(cfg))
+    setQIndex(0)
+    setScore(0)
+    setChosen(null)
+    setDone(false)
+  }
+
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    const newCfg = DIFF_CONFIG[d]
+    setQuestions(buildGame(newCfg))
     setQIndex(0)
     setScore(0)
     setChosen(null)
@@ -112,12 +141,13 @@ export default function FlagQuiz() {
       <div className="fq-page">
         <Breadcrumb />
         <h1>Flag Quiz</h1>
+        <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
         <div className="fq-result">
-          <p className="fq-result-score">{score}/{QUESTIONS_PER_GAME}</p>
+          <p className="fq-result-score">{score}/{questions.length}</p>
           <p className="fq-result-msg">
-            {score === QUESTIONS_PER_GAME ? '🏆 Perfect score!' :
-             score >= 7 ? '🌟 Great job!' :
-             score >= 4 ? '👍 Good effort!' : '🗺️ Keep exploring!'}
+            {score === questions.length ? '🏆 Perfect score!' :
+             score >= Math.round(questions.length * 0.7) ? '🌟 Great job!' :
+             score >= Math.round(questions.length * 0.4) ? '👍 Good effort!' : '🗺️ Keep exploring!'}
           </p>
           <button className="fq-btn" onClick={restart}>Play Again</button>
         </div>
@@ -129,13 +159,18 @@ export default function FlagQuiz() {
     <div className="fq-page">
       <Breadcrumb />
       <h1>Flag Quiz</h1>
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="fq-header">
-        <span className="fq-progress">Question {qIndex + 1} of {QUESTIONS_PER_GAME}</span>
+        <span className="fq-progress">Question {qIndex + 1} of {questions.length}</span>
         <span className="fq-score">Score: {score}</span>
       </div>
 
       <div className="fq-flag">{question.correct.flag}</div>
+      {cfg.showCountryName && (
+        <p className="fq-hint">Hint: {question.correct.name}</p>
+      )}
       <p className="fq-prompt">Which country does this flag belong to?</p>
 
       <div className="fq-choices">

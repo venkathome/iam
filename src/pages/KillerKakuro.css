@@ -159,8 +159,6 @@
 /* ── Grid ────────────────────────────────────────────────── */
 .kk2-grid {
   display: grid;
-  grid-template-columns: repeat(9, 52px);
-  grid-template-rows: repeat(9, 52px);
   border: 2.5px solid rgba(255,255,255,0.5);
   border-radius: 6px;
   overflow: hidden;
@@ -168,8 +166,6 @@
 }
 
 .kk2-cell {
-  width: 52px;
-  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;

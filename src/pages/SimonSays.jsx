@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './SimonSays.css'
+
+const HOW_TO_PLAY = [
+  'Watch the colored buttons light up one at a time.',
+  'After the sequence finishes, press the same buttons in the exact same order.',
+  'Each round adds one more button to the sequence.',
+  'One wrong press and the game is over.',
+  'How long a sequence can you remember?',
+]
 
 const COLORS = [
   { id: 'green',  label: 'Green'  },
@@ -9,25 +20,31 @@ const COLORS = [
   { id: 'blue',   label: 'Blue'   },
 ]
 
-function flashDuration(round) {
-  return Math.max(180, 600 - Math.floor((round - 1) / 5) * 60)
+const DIFF_CONFIG = {
+  'very-easy': { flashMs: 900, gapMs: 400 },
+  'easy':      { flashMs: 700, gapMs: 350 },
+  'medium':    { flashMs: 500, gapMs: 300 },
+  'hard':      { flashMs: 380, gapMs: 200 },
+  'very-hard': { flashMs: 260, gapMs: 150 },
+  'ultimate':  { flashMs: 160, gapMs: 100 },
 }
 
 export default function SimonSays() {
-  const [phase, setPhase]           = useState('idle')   // idle | watching | input | gameover
-  const [sequence, setSequence]     = useState([])
-  const [activeColor, setActive]    = useState(null)
-  const [playerIndex, setPlayerIdx] = useState(0)
-  const [best, setBest]             = useState(() => Number(localStorage.getItem('simon-best') || 0))
+  const [difficulty, setDifficulty]    = useState('medium')
+  const [phase, setPhase]              = useState('idle')
+  const [sequence, setSequence]        = useState([])
+  const [activeColor, setActive]       = useState(null)
+  const [playerIndex, setPlayerIdx]    = useState(0)
+  const [best, setBest]                = useState(() => Number(localStorage.getItem('simon-best') || 0))
   const timers = useRef([])
 
   function cancel() { timers.current.forEach(clearTimeout); timers.current = [] }
 
-  const playSequence = useCallback((seq) => {
+  const playSequence = useCallback((seq, cfg) => {
     setPhase('watching')
     setActive(null)
-    const dur  = flashDuration(seq.length)
-    const step = dur + 180
+    const dur  = cfg.flashMs
+    const step = dur + cfg.gapMs
 
     seq.forEach((id, i) => {
       timers.current.push(setTimeout(() => setActive(id),   i * step))
@@ -41,15 +58,25 @@ export default function SimonSays() {
 
   useEffect(() => () => cancel(), [])
 
-  function start() {
+  function start(cfg) {
     cancel()
     const seq = [COLORS[Math.floor(Math.random() * 4)].id]
     setSequence(seq)
-    playSequence(seq)
+    playSequence(seq, cfg)
+  }
+
+  function handleDifficultyChange(d) {
+    cancel()
+    setDifficulty(d)
+    setPhase('idle')
+    setSequence([])
+    setActive(null)
+    setPlayerIdx(0)
   }
 
   function handleClick(id) {
     if (phase !== 'input') return
+    const cfg = DIFF_CONFIG[difficulty]
 
     if (id !== sequence[playerIndex]) {
       cancel()
@@ -66,7 +93,7 @@ export default function SimonSays() {
       if (nb > best) { setBest(nb); localStorage.setItem('simon-best', nb) }
       setBest(nb)
       setSequence(next)
-      timers.current.push(setTimeout(() => playSequence(next), 700))
+      timers.current.push(setTimeout(() => playSequence(next, cfg), 700))
     } else {
       setPlayerIdx(i => i + 1)
     }
@@ -79,6 +106,9 @@ export default function SimonSays() {
     <div className="simon-page">
       <Breadcrumb />
       <h1>Simon Says</h1>
+
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="simon-stats">
         <div className="simon-stat">
@@ -111,7 +141,7 @@ export default function SimonSays() {
       </div>
 
       {(phase === 'idle' || phase === 'gameover') && (
-        <button className="simon-cta" onClick={start}>
+        <button className="simon-cta" onClick={() => start(DIFF_CONFIG[difficulty])}>
           {phase === 'idle' ? 'Start Game' : 'Play Again'}
         </button>
       )}

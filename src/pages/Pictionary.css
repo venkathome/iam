@@ -67,6 +67,20 @@
   padding: 0.2rem 0.6rem;
 }
 
+.pict-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 10px;
+  padding: 0.3rem 0.9rem;
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
 /* ── Canvas ──────────────────────────────────────────────── */
 .pict-canvas-wrap {
   width: 100%;

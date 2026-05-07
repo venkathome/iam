@@ -1,9 +1,29 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import { BRANDS, BRAND_CATEGORIES } from '../data/brandsData'
 import './Brands.css'
 
+const HOW_TO_PLAY = [
+  'Choose a category to begin.',
+  'A brand logo appears on screen — pick the correct company name from the choices.',
+  'Score a point for every logo you identify correctly.',
+  'Use the arrow key (→) to move on after answering.',
+  'How many brands do you recognize?',
+]
+
 const SPARK_COLORS = ['#f97316','#ec4899','#a78bfa','#06b6d4','#4ade80','#fbbf24']
+
+const DIFF_CONFIG = {
+  'very-easy': { questionsPerGame: 8,  choices: 3 },
+  'easy':      { questionsPerGame: 10, choices: 4 },
+  'medium':    { questionsPerGame: 12, choices: 4 },
+  'hard':      { questionsPerGame: 15, choices: 5 },
+  'very-hard': { questionsPerGame: 18, choices: 6 },
+  'ultimate':  { questionsPerGame: 20, choices: 6 },
+}
 
 function shuffle(arr) {
   const a = [...arr]
@@ -14,9 +34,10 @@ function shuffle(arr) {
   return a
 }
 
-function generateChoices(allBrands, correct) {
+function generateChoices(allBrands, correct, numChoices) {
   const others = allBrands.filter(b => b.id !== correct.id)
-  return shuffle([correct, ...shuffle([...others]).slice(0, 3)])
+  const count = Math.min(numChoices - 1, others.length)
+  return shuffle([correct, ...shuffle([...others]).slice(0, count)])
 }
 
 function Sparkles({ items }) {
@@ -62,6 +83,7 @@ function StarRating({ score, total }) {
 }
 
 export default function Brands() {
+  const [difficulty, setDifficulty] = useState('medium')
   const [screen, setScreen] = useState('home')
   const [category, setCategory] = useState(null)
   const [brandsList, setBrandsList] = useState([])
@@ -84,17 +106,32 @@ export default function Brands() {
   }, [])
 
   function startQuiz(catId) {
+    const cfg = DIFF_CONFIG[difficulty]
     const all = BRANDS[catId]
-    const shuffled = shuffle([...all])
+    const shuffled = shuffle([...all]).slice(0, cfg.questionsPerGame)
     setBrandsList(shuffled)
     setCurrentIndex(0)
     setScore(0)
     setStreak(0)
     setMaxStreak(0)
     setSelected(null)
-    setChoices(generateChoices(all, shuffled[0]))
+    setChoices(generateChoices(all, shuffled[0], cfg.choices))
     setCategory(catId)
     setScreen('quiz')
+  }
+
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    setScreen('home')
+    setCategory(null)
+    setBrandsList([])
+    setCurrentIndex(0)
+    setScore(0)
+    setStreak(0)
+    setMaxStreak(0)
+    setSelected(null)
+    setChoices([])
+    setSparkles([])
   }
 
   function handleAnswer(brandId) {
@@ -119,11 +156,18 @@ export default function Brands() {
     if (nextIdx >= brandsList.length) {
       setScreen('end')
     } else {
+      const cfg = DIFF_CONFIG[difficulty]
       setCurrentIndex(nextIdx)
       setSelected(null)
-      setChoices(generateChoices(BRANDS[category], brandsList[nextIdx]))
+      setChoices(generateChoices(BRANDS[category], brandsList[nextIdx], cfg.choices))
     }
   }
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'ArrowRight' && screen === 'quiz' && selected !== null) nextQuestion() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
 
   const catInfo = category ? BRAND_CATEGORIES.find(c => c.id === category) : null
   const currentBrand = brandsList[currentIndex]
@@ -139,6 +183,8 @@ export default function Brands() {
           <h1 className="br-title">Brand Quiz!</h1>
           <p className="br-subtitle">Guess the brand from the logo 🏆</p>
         </div>
+        <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+        <HowToPlay steps={HOW_TO_PLAY} />
         <div className="br-home-grid">
           {BRAND_CATEGORIES.map(cat => (
             <button
@@ -170,6 +216,7 @@ export default function Brands() {
       <div className="brands-page">
         <Sparkles items={sparkles} />
         <Breadcrumb />
+        <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
         <div className="br-end-screen">
           <h2 className="br-end-title">Quiz Complete!</h2>
           <StarRating score={score} total={brandsList.length} />
@@ -191,13 +238,13 @@ export default function Brands() {
     )
   }
 
-  // Quiz screen
   const { Logo } = currentBrand
 
   return (
     <div className="brands-page">
       <Sparkles items={sparkles} />
       <Breadcrumb />
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
 
       <div className="br-quiz-top">
         <div className="br-quiz-meta">

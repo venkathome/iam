@@ -1,8 +1,27 @@
 import { useState, useEffect, useRef } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './WordChain.css'
 
-const TIME_LIMIT = 15
+const HOW_TO_PLAY = [
+  'Type any word to start the chain.',
+  'Each new word must begin with the last letter of the previous word.',
+  'Example: cat → tiger → rabbit → tiger... wait, no repeats allowed!',
+  'A harder difficulty means shorter time limits and rarer words.',
+  'Keep the chain going as long as you can!',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { timeLimit: 25 },
+  'easy':      { timeLimit: 20 },
+  'medium':    { timeLimit: 15 },
+  'hard':      { timeLimit: 10 },
+  'very-hard': { timeLimit: 7  },
+  'ultimate':  { timeLimit: 4  },
+}
+
 const SEEDS = ['apple', 'eagle', 'ocean', 'lamp', 'tiger', 'river', 'nest', 'tree', 'elephant', 'diamond']
 
 function randomSeed() {
@@ -10,14 +29,17 @@ function randomSeed() {
 }
 
 export default function WordChain() {
+  const [difficulty, setDifficulty] = useState('medium')
   const [chain, setChain]       = useState([randomSeed()])
   const [input, setInput]       = useState('')
-  const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
+  const [timeLeft, setTimeLeft] = useState(DIFF_CONFIG['medium'].timeLimit)
   const [status, setStatus]     = useState('playing') // 'playing' | 'over'
   const [error, setError]       = useState('')
   const [bestScore, setBestScore] = useState(() => Number(localStorage.getItem('wc-best') ?? 0))
   const inputRef  = useRef(null)
   const chainRef  = useRef(null)
+
+  const timeLimit = DIFF_CONFIG[difficulty].timeLimit
 
   const currentWord = chain[chain.length - 1]
   const requiredLetter = currentWord[currentWord.length - 1]
@@ -69,26 +91,39 @@ export default function WordChain() {
 
     setError('')
     setChain(prev => [...prev, word])
-    setTimeLeft(TIME_LIMIT)
+    setTimeLeft(timeLimit)
   }
 
   function restart() {
     const seed = randomSeed()
     setChain([seed])
     setInput('')
-    setTimeLeft(TIME_LIMIT)
+    setTimeLeft(timeLimit)
     setStatus('playing')
     setError('')
   }
 
-  const timerPct = (timeLeft / TIME_LIMIT) * 100
-  const timerUrgent = timeLeft <= 5
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    const seed = randomSeed()
+    setChain([seed])
+    setInput('')
+    setTimeLeft(DIFF_CONFIG[d].timeLimit)
+    setStatus('playing')
+    setError('')
+  }
+
+  const timerPct = (timeLeft / timeLimit) * 100
+  const timerUrgent = timeLeft <= Math.min(5, Math.floor(timeLimit / 3))
 
   return (
     <div className="wc-page">
       <Breadcrumb />
       <h1>Word Chain</h1>
       <p className="wc-subtitle">Each word must start with the last letter of the previous one.</p>
+      <p className="diff-label-text">Difficulty</p>
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="wc-layout">
         {/* Chain history */}

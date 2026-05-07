@@ -1,8 +1,26 @@
 import { useState, useEffect } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './QuizBowl.css'
 
-const QUESTION_TIME = 20
+const HOW_TO_PLAY = [
+  'Pick a category (Science, History, Geography, and more).',
+  'A question appears with four possible answers — pick the right one.',
+  'Answer before the timer runs out to score points.',
+  'The quicker you answer, the more points you earn.',
+  'See how high you can score across all your questions!',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { questionTime: 30 },
+  'easy':      { questionTime: 25 },
+  'medium':    { questionTime: 20 },
+  'hard':      { questionTime: 15 },
+  'very-hard': { questionTime: 10 },
+  'ultimate':  { questionTime: 7  },
+}
 
 const CATEGORIES = [
   {
@@ -109,14 +127,16 @@ function shuffle(arr) {
 const LABELS = ['A', 'B', 'C', 'D']
 
 export default function QuizBowl() {
+  const [difficulty, setDifficulty] = useState('medium')
   const [screen, setScreen]     = useState('categories')
   const [activeCat, setActiveCat] = useState(null)
   const [questions, setQuestions] = useState([])
   const [qIndex, setQIndex]     = useState(0)
   const [score, setScore]       = useState(0)
-  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME)
+  const [timeLeft, setTimeLeft] = useState(DIFF_CONFIG['medium'].questionTime)
   const [feedback, setFeedback] = useState(null)
 
+  const cfg = DIFF_CONFIG[difficulty]
   const question = questions[qIndex] ?? null
 
   function pickCategory(cat) {
@@ -124,9 +144,20 @@ export default function QuizBowl() {
     setQuestions(shuffle(cat.questions).slice(0, 8))
     setQIndex(0)
     setScore(0)
-    setTimeLeft(QUESTION_TIME)
+    setTimeLeft(cfg.questionTime)
     setFeedback(null)
     setScreen('question')
+  }
+
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    setScreen('categories')
+    setActiveCat(null)
+    setQuestions([])
+    setQIndex(0)
+    setScore(0)
+    setTimeLeft(DIFF_CONFIG[d].questionTime)
+    setFeedback(null)
   }
 
   useEffect(() => {
@@ -143,7 +174,7 @@ export default function QuizBowl() {
     if (feedback !== null || !question) return
     const isCorrect = idx === question.correct
     if (isCorrect) {
-      const bonus = Math.floor((timeLeft / QUESTION_TIME) * 5)
+      const bonus = Math.floor((timeLeft / cfg.questionTime) * 5)
       setScore(s => s + 10 + bonus)
     }
     setFeedback({ chosen: idx, correct: isCorrect, timedOut: false })
@@ -156,12 +187,12 @@ export default function QuizBowl() {
         setScreen('result')
       } else {
         setQIndex(i => i + 1)
-        setTimeLeft(QUESTION_TIME)
+        setTimeLeft(cfg.questionTime)
         setFeedback(null)
       }
     }, 1600)
     return () => clearTimeout(id)
-  }, [feedback, qIndex, questions.length])
+  }, [feedback, qIndex, questions.length, cfg.questionTime])
 
   function optionClass(idx) {
     if (!feedback) return 'qb-option'
@@ -175,6 +206,8 @@ export default function QuizBowl() {
       <div className="qb-page">
         <Breadcrumb />
         <h1>Quiz Bowl</h1>
+        <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+        <HowToPlay steps={HOW_TO_PLAY} />
         <p className="qb-subtitle">Choose a category to begin.</p>
         <div className="qb-cat-grid">
           {CATEGORIES.map(cat => (
@@ -205,6 +238,7 @@ export default function QuizBowl() {
     return (
       <div className="qb-page qb-page--result">
         <Breadcrumb />
+        <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
         <div className="qb-result-card" style={{ '--cat-color': activeCat.color }}>
           <div className="qb-result-emoji">{activeCat.emoji}</div>
           <p className="qb-result-grade">{grade}</p>
@@ -230,6 +264,7 @@ export default function QuizBowl() {
   return (
     <div className="qb-page qb-page--question">
       <Breadcrumb />
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
       <div className="qb-header">
         <span className="qb-cat-tag" style={{ color: activeCat.color, borderColor: activeCat.color }}>
           {activeCat.emoji} {activeCat.label}
@@ -242,7 +277,7 @@ export default function QuizBowl() {
         <div
           className={`qb-timer-fill ${timeLeft <= 5 ? 'qb-timer-fill--urgent' : ''}`}
           style={{
-            width: `${(timeLeft / QUESTION_TIME) * 100}%`,
+            width: `${(timeLeft / cfg.questionTime) * 100}%`,
             transition: feedback ? 'none' : 'width 1s linear',
           }}
         />

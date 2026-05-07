@@ -1,19 +1,38 @@
 import { useEffect, useRef, useState } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Breakout.css'
+
+const HOW_TO_PLAY = [
+  'Move the paddle left and right with arrow keys or your mouse.',
+  'The ball bounces off your paddle and smashes into the bricks above.',
+  "Don't let the ball fall past your paddle — you'll lose a life!",
+  'Break all the bricks to advance to the next level.',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { brickRows: 3, initBallSpeed: 3.5, lives: 5 },
+  'easy':      { brickRows: 4, initBallSpeed: 4.0, lives: 4 },
+  'medium':    { brickRows: 5, initBallSpeed: 4.5, lives: 3 },
+  'hard':      { brickRows: 6, initBallSpeed: 5.0, lives: 3 },
+  'very-hard': { brickRows: 7, initBallSpeed: 5.5, lives: 2 },
+  'ultimate':  { brickRows: 8, initBallSpeed: 6.0, lives: 1 },
+}
 
 const W = 480, H = 540
 const PADDLE_W = 80, PADDLE_H = 10, PADDLE_Y = H - 40
 const BALL_R = 7
-const BRICK_COLS = 10, BRICK_ROWS = 5, BRICK_H = 18, BRICK_GAP = 4
+const BRICK_COLS = 10, BRICK_H = 18, BRICK_GAP = 4
 const BRICK_OFFSET_X = 20, BRICK_OFFSET_Y = 60
 const BRICK_W = (W - BRICK_OFFSET_X * 2 - (BRICK_COLS - 1) * BRICK_GAP) / BRICK_COLS
 
-const ROW_COLORS = ['#ff4444', '#ff9800', '#ffeb3b', '#4caf50', '#2196f3']
+const ROW_COLORS = ['#ff4444', '#ff9800', '#ffeb3b', '#4caf50', '#2196f3', '#e040fb', '#00bcd4', '#8bc34a']
 
-function makeBricks() {
+function makeBricks(brickRows) {
   const bricks = []
-  for (let r = 0; r < BRICK_ROWS; r++)
+  for (let r = 0; r < brickRows; r++)
     for (let c = 0; c < BRICK_COLS; c++)
       bricks.push({ r, c, alive: true })
   return bricks
@@ -23,13 +42,15 @@ export default function Breakout() {
   const canvasRef = useRef(null)
   const stateRef  = useRef(null)
   const rafRef    = useRef(null)
+  const diffRef   = useRef('medium')
+  const [difficulty, setDifficulty] = useState('medium')
   const [phase, setPhase]   = useState('idle')
   const [score, setScore]   = useState(0)
-  const [lives, setLives]   = useState(3)
+  const [lives, setLives]   = useState(DIFF_CONFIG['medium'].lives)
   const [level, setLevel]   = useState(1)
 
-  function initState(lvl = 1) {
-    const speed = 4 + (lvl - 1) * 0.6
+  function initState(lvl = 1, cfg = DIFF_CONFIG[diffRef.current]) {
+    const speed = cfg.initBallSpeed + (lvl - 1) * 0.6
     const angle = (-Math.PI / 2) + (Math.random() - 0.5) * 0.8
     return {
       paddleX: W / 2 - PADDLE_W / 2,
@@ -37,12 +58,14 @@ export default function Breakout() {
       ballY: PADDLE_Y - BALL_R - 2,
       vx: speed * Math.cos(angle),
       vy: speed * Math.sin(angle),
-      bricks: makeBricks(),
-      lives: 3,
+      bricks: makeBricks(cfg.brickRows),
+      lives: cfg.lives,
       score: 0,
       level: lvl,
       phase: 'playing',
       keys: { left: false, right: false },
+      brickRows: cfg.brickRows,
+      initBallSpeed: cfg.initBallSpeed,
     }
   }
 
@@ -140,7 +163,7 @@ export default function Breakout() {
         draw(ctx, s)
         return
       }
-      const speed = 4 + (s.level - 1) * 0.6
+      const speed = s.initBallSpeed + (s.level - 1) * 0.6
       const angle = (-Math.PI / 2) + (Math.random() - 0.5) * 0.8
       s.ballX = W / 2
       s.ballY = PADDLE_Y - BALL_R - 2
@@ -158,7 +181,7 @@ export default function Breakout() {
       const dx = s.ballX - cx, dy = s.ballY - cy
       if (dx * dx + dy * dy < BALL_R * BALL_R) {
         b.alive = false
-        s.score += (BRICK_ROWS - b.r) * 10
+        s.score += (s.brickRows - b.r) * 10
         setScore(s.score)
         const overlapX = BRICK_W / 2 - Math.abs(s.ballX - (bx + BRICK_W / 2))
         const overlapY = BRICK_H / 2 - Math.abs(s.ballY - (by + BRICK_H / 2))
@@ -170,7 +193,8 @@ export default function Breakout() {
     // level clear
     if (s.bricks.every(b => !b.alive)) {
       const nextLvl = s.level + 1
-      const newS = initState(nextLvl)
+      const cfg = { brickRows: s.brickRows, initBallSpeed: s.initBallSpeed, lives: s.lives }
+      const newS = initState(nextLvl, cfg)
       newS.score = s.score
       newS.lives = s.lives
       stateRef.current = newS
@@ -186,11 +210,12 @@ export default function Breakout() {
 
   function startGame() {
     cancelAnimationFrame(rafRef.current)
-    const s = initState(1)
+    const cfg = DIFF_CONFIG[diffRef.current]
+    const s = initState(1, cfg)
     stateRef.current = s
     setPhase('playing')
     setScore(0)
-    setLives(3)
+    setLives(cfg.lives)
     setLevel(1)
     rafRef.current = requestAnimationFrame(loop)
   }
@@ -243,6 +268,7 @@ export default function Breakout() {
     <div className="breakout-page">
       <Breadcrumb />
       <h1 className="breakout-title">BREAKOUT</h1>
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="breakout-wrap">
         <canvas ref={canvasRef} width={W} height={H} className="breakout-canvas" />
@@ -255,6 +281,7 @@ export default function Breakout() {
               </>
             )}
             {phase === 'idle' && <p className="bo-over-title">BREAKOUT</p>}
+            <DifficultySelector value={difficulty} onChange={(d) => { diffRef.current = d; setDifficulty(d) }} />
             <button className="bo-btn" onClick={startGame}>
               {phase === 'lost' ? '[ PLAY AGAIN ]' : '[ START GAME ]'}
             </button>

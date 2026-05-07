@@ -1,16 +1,37 @@
 import { useState, useEffect, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './MemoryMatch.css'
 
-const EMOJIS = ['🐶', '🦁', '🐸', '🦋', '🌈', '🍕', '🚀', '⭐']
+const HOW_TO_PLAY = [
+  'All cards start face-down.',
+  'Click any card to flip it and see the emoji underneath.',
+  'Click a second card — if they match, both stay face-up.',
+  "If they don't match, both flip back over. Try to remember where they were!",
+  'Find all matching pairs to win.',
+]
 
-function buildDeck() {
-  const pairs = [...EMOJIS, ...EMOJIS].map((emoji, i) => ({ id: i, emoji, flipped: false, matched: false }))
-  for (let i = pairs.length - 1; i > 0; i--) {
+const EMOJIS = ['🐶', '🦁', '🐸', '🦋', '🌈', '🍕', '🚀', '⭐', '🎸', '🏆', '🦄', '🌺', '🍦', '🎨', '🦊', '🐬']
+
+const DIFF_CONFIG = {
+  'very-easy': { pairs: 4  },
+  'easy':      { pairs: 6  },
+  'medium':    { pairs: 8  },
+  'hard':      { pairs: 10 },
+  'very-hard': { pairs: 12 },
+  'ultimate':  { pairs: 16 },
+}
+
+function buildDeck(pairs) {
+  const pool = EMOJIS.slice(0, pairs)
+  const deck = [...pool, ...pool].map((emoji, i) => ({ id: i, emoji, flipped: false, matched: false }))
+  for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [pairs[i], pairs[j]] = [pairs[j], pairs[i]]
+    [deck[i], deck[j]] = [deck[j], deck[i]]
   }
-  return pairs
+  return deck
 }
 
 function formatTime(secs) {
@@ -20,13 +41,15 @@ function formatTime(secs) {
 }
 
 export default function MemoryMatch() {
-  const [cards, setCards] = useState(buildDeck)
-  const [selected, setSelected] = useState([])
-  const [locked, setLocked] = useState(false)
-  const [moves, setMoves] = useState(0)
-  const [elapsed, setElapsed] = useState(0)
-  const [won, setWon] = useState(false)
+  const [difficulty, setDifficulty] = useState('medium')
+  const [cards, setCards]           = useState(() => buildDeck(DIFF_CONFIG['medium'].pairs))
+  const [selected, setSelected]     = useState([])
+  const [locked, setLocked]         = useState(false)
+  const [moves, setMoves]           = useState(0)
+  const [elapsed, setElapsed]       = useState(0)
+  const [won, setWon]               = useState(false)
 
+  const totalPairs = DIFF_CONFIG[difficulty].pairs
   const matchedCount = cards.filter(c => c.matched).length
   const pairs = matchedCount / 2
 
@@ -37,8 +60,8 @@ export default function MemoryMatch() {
   }, [won])
 
   useEffect(() => {
-    if (matchedCount === 16) setWon(true)
-  }, [matchedCount])
+    if (matchedCount === totalPairs * 2) setWon(true)
+  }, [matchedCount, totalPairs])
 
   const flip = useCallback((card) => {
     if (locked || card.flipped || card.matched) return
@@ -68,8 +91,8 @@ export default function MemoryMatch() {
     })
   }, [locked])
 
-  function restart() {
-    setCards(buildDeck())
+  function restart(pairsCount) {
+    setCards(buildDeck(pairsCount))
     setSelected([])
     setLocked(false)
     setMoves(0)
@@ -77,13 +100,21 @@ export default function MemoryMatch() {
     setWon(false)
   }
 
+  function handleDifficultyChange(d) {
+    setDifficulty(d)
+    restart(DIFF_CONFIG[d].pairs)
+  }
+
   return (
     <div className="mm-page">
       <Breadcrumb />
       <h1>Memory Match</h1>
 
+      <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      <HowToPlay steps={HOW_TO_PLAY} />
+
       <div className="mm-stats">
-        <span className="mm-stat"><span className="mm-stat-label">Pairs</span>{pairs}/8</span>
+        <span className="mm-stat"><span className="mm-stat-label">Pairs</span>{pairs}/{totalPairs}</span>
         <span className="mm-stat"><span className="mm-stat-label">Moves</span>{moves}</span>
         <span className="mm-stat"><span className="mm-stat-label">Time</span>{formatTime(elapsed)}</span>
       </div>
@@ -92,7 +123,7 @@ export default function MemoryMatch() {
         <div className="mm-win">
           <p className="mm-win-title">🎉 You matched them all!</p>
           <p className="mm-win-detail">{moves} moves · {formatTime(elapsed)}</p>
-          <button className="mm-btn" onClick={restart}>Play Again</button>
+          <button className="mm-btn" onClick={() => restart(totalPairs)}>Play Again</button>
         </div>
       ) : (
         <div className="mm-grid">

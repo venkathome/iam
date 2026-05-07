@@ -1,33 +1,54 @@
 import { useEffect, useRef, useState } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Pong.css'
+
+const HOW_TO_PLAY = [
+  'Move your paddle up and down to hit the ball back.',
+  'Score a point when the ball gets past your opponent.',
+  'First to reach the score limit wins!',
+  'vs AI: use W (up) and S (down) keys.',
+  '2 Players: left paddle uses W/S, right paddle uses ↑/↓.',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { aiSpeed: 2.5, ballSpeed: 3.5, winScore: 5  },
+  'easy':      { aiSpeed: 3.5, ballSpeed: 4.0, winScore: 7  },
+  'medium':    { aiSpeed: 4.5, ballSpeed: 4.5, winScore: 7  },
+  'hard':      { aiSpeed: 5.5, ballSpeed: 5.0, winScore: 7  },
+  'very-hard': { aiSpeed: 6.5, ballSpeed: 5.5, winScore: 9  },
+  'ultimate':  { aiSpeed: 8.0, ballSpeed: 6.5, winScore: 11 },
+}
 
 const W = 480, H = 540
 const PADDLE_W = 10, PADDLE_H = 70, BALL_R = 7
 const PADDLE_MARGIN = 20
-const WINNING_SCORE = 7
 
-function initBall() {
+function initBall(ballSpeed) {
   const angle = (Math.random() * 0.6 - 0.3) + (Math.random() < 0.5 ? 0 : Math.PI)
-  const speed = 4.5
   return {
     x: W / 2, y: H / 2,
-    vx: speed * Math.cos(angle),
-    vy: speed * Math.sin(angle),
+    vx: ballSpeed * Math.cos(angle),
+    vy: ballSpeed * Math.sin(angle),
   }
 }
 
-function initState(mode) {
+function initState(mode, cfg) {
   return {
     leftY:  H / 2 - PADDLE_H / 2,
     rightY: H / 2 - PADDLE_H / 2,
-    ball: initBall(),
+    ball: initBall(cfg.ballSpeed),
     leftScore: 0,
     rightScore: 0,
     phase: 'playing',
     mode,
     keys: { w: false, s: false, up: false, down: false },
     frameCount: 0,
+    aiSpeed: cfg.aiSpeed,
+    ballSpeed: cfg.ballSpeed,
+    winScore: cfg.winScore,
   }
 }
 
@@ -39,6 +60,8 @@ export default function Pong() {
   const canvasRef = useRef(null)
   const stateRef  = useRef(null)
   const rafRef    = useRef(null)
+  const diffRef   = useRef('medium')
+  const [difficulty, setDifficulty] = useState('medium')
   const [phase, setPhase]   = useState('idle')
   const [mode, setMode]     = useState('ai')
   const [scoreL, setScoreL] = useState(0)
@@ -111,8 +134,8 @@ export default function Pong() {
     } else {
       const center = s.rightY + PADDLE_H / 2
       const diff = s.ball.y - center
-      const aiSpeed = Math.min(Math.abs(diff), 4.5)
-      s.rightY = clampPaddleY(s.rightY + Math.sign(diff) * aiSpeed)
+      const aiSpd = Math.min(Math.abs(diff), s.aiSpeed)
+      s.rightY = clampPaddleY(s.rightY + Math.sign(diff) * aiSpd)
     }
 
     // ball
@@ -153,28 +176,28 @@ export default function Pong() {
     if (s.ball.x - BALL_R < 0) {
       s.rightScore++
       setScoreR(s.rightScore)
-      if (s.rightScore >= WINNING_SCORE) {
+      if (s.rightScore >= s.winScore) {
         s.phase = 'won'
         s.winner = s.mode === '2p' ? 'PLAYER 2' : 'AI'
         setPhase('won')
         draw(ctx, s)
         return
       }
-      s.ball = initBall()
+      s.ball = initBall(s.ballSpeed)
       s.ball.vx = Math.abs(s.ball.vx)
     }
 
     if (s.ball.x + BALL_R > W) {
       s.leftScore++
       setScoreL(s.leftScore)
-      if (s.leftScore >= WINNING_SCORE) {
+      if (s.leftScore >= s.winScore) {
         s.phase = 'won'
         s.winner = 'PLAYER 1'
         setPhase('won')
         draw(ctx, s)
         return
       }
-      s.ball = initBall()
+      s.ball = initBall(s.ballSpeed)
       s.ball.vx = -Math.abs(s.ball.vx)
     }
 
@@ -184,7 +207,7 @@ export default function Pong() {
 
   function startGame(m) {
     cancelAnimationFrame(rafRef.current)
-    const s = initState(m ?? mode)
+    const s = initState(m ?? mode, DIFF_CONFIG[diffRef.current])
     stateRef.current = s
     setPhase('playing')
     setScoreL(0)
@@ -233,6 +256,7 @@ export default function Pong() {
     <div className="pong-page">
       <Breadcrumb />
       <h1 className="pong-title">PONG</h1>
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       <div className="pong-mode-bar">
         <button
@@ -251,6 +275,7 @@ export default function Pong() {
           <div className="pong-overlay">
             {phase === 'won' && <p className="pong-over-title">{winner} WINS!</p>}
             {phase === 'idle' && <p className="pong-over-title">PONG</p>}
+            <DifficultySelector value={difficulty} onChange={(d) => { diffRef.current = d; setDifficulty(d) }} />
             <button className="pong-btn" onClick={() => startGame()}>
               {phase === 'won' ? '[ PLAY AGAIN ]' : '[ START GAME ]'}
             </button>
@@ -275,7 +300,7 @@ export default function Pong() {
         </div>
       </div>
 
-      <p className="pong-target">First to {WINNING_SCORE} wins</p>
+      <p className="pong-target">First to {DIFF_CONFIG[difficulty].winScore} wins</p>
     </div>
   )
 }

@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Sudoku.css'
+
+const HOW_TO_PLAY = [
+  'Fill every empty cell with a digit from 1 to 9.',
+  'Each row (left to right) must contain each digit exactly once.',
+  'Each column (top to bottom) must contain each digit exactly once.',
+  'Each of the nine 3×3 boxes must also contain each digit exactly once.',
+  'Cells with a light background are pre-filled — you cannot change those.',
+]
 
 function shuffle(arr) {
   const a = [...arr]
@@ -83,15 +94,19 @@ function countSolutions(grid, limit = 2) {
   return count
 }
 
-const DIFFICULTY_TARGETS = {
-  easy: 40, medium: 33, hard: 27,
-  'very-hard': 23, challenging: 20, ultimate: 17,
+const DIFF_CONFIG = {
+  'very-easy': { clues: 46 },
+  'easy':      { clues: 40 },
+  'medium':    { clues: 33 },
+  'hard':      { clues: 27 },
+  'very-hard': { clues: 22 },
+  'ultimate':  { clues: 17 },
 }
 
 function generatePuzzle(difficulty) {
   const solution = generateCompleteGrid()
   const puzzle = solution.map(r => [...r])
-  const toRemove = 81 - DIFFICULTY_TARGETS[difficulty]
+  const toRemove = 81 - DIFF_CONFIG[difficulty].clues
   const positions = shuffle(Array.from({ length: 81 }, (_, i) => [Math.floor(i / 9), i % 9]))
   let removed = 0
   for (const [r, c] of positions) {
@@ -129,17 +144,8 @@ function formatTime(s) {
   return `${m}:${String(s % 60).padStart(2, '0')}`
 }
 
-const DIFFICULTIES = [
-  { id: 'easy',        label: 'Easy',        hint: '~40 clues given' },
-  { id: 'medium',      label: 'Medium',      hint: '~33 clues given' },
-  { id: 'hard',        label: 'Hard',        hint: '~27 clues given' },
-  { id: 'very-hard',   label: 'Very Hard',   hint: '~23 clues given' },
-  { id: 'challenging', label: 'Challenging', hint: '~20 clues given' },
-  { id: 'ultimate',    label: 'Ultimate',    hint: '~17 clues given' },
-]
-
 export default function Sudoku() {
-  const [difficulty, setDifficulty] = useState(null)
+  const [difficulty, setDifficulty] = useState('medium')
   const [generating, setGenerating] = useState(false)
   const [grid, setGrid]             = useState(null)
   const [solution, setSolution]     = useState(null)
@@ -151,7 +157,6 @@ export default function Sudoku() {
   const [gameKey, setGameKey]       = useState(0)
 
   function startGame(diff) {
-    setDifficulty(diff)
     setGenerating(true)
     setGrid(null)
     setSolution(null)
@@ -169,6 +174,10 @@ export default function Sudoku() {
       setGenerating(false)
     }, 30)
   }
+
+  useEffect(() => {
+    startGame(difficulty)
+  }, [])
 
   const fillCell = useCallback((r, c, value) => {
     setGrid(prev => {
@@ -213,25 +222,6 @@ export default function Sudoku() {
     setHintsLeft(h => h - 1)
   }
 
-  if (!difficulty && !generating) {
-    return (
-      <div className="sudoku-page">
-        <Breadcrumb />
-        <h1>Sudoku</h1>
-        <p className="sudoku-subtitle">Fill every row, column and 3×3 box with digits 1–9.</p>
-        <div className="sudoku-diff-grid">
-          {DIFFICULTIES.map(({ id, label, hint }) => (
-            <button key={id} className={`sudoku-diff-btn sudoku-diff-btn--${id}`}
-              onClick={() => startGame(id)}>
-              <span className="sudoku-diff-label">{label}</span>
-              <span className="sudoku-diff-hint">{hint}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   if (generating) {
     return (
       <div className="sudoku-page">
@@ -244,20 +234,17 @@ export default function Sudoku() {
 
   const [selRow, selCol] = selected ?? [-1, -1]
   const selVal = selRow >= 0 ? grid[selRow][selCol] : 0
-  const diffLabel = DIFFICULTIES.find(d => d.id === difficulty)?.label ?? difficulty
 
   return (
     <div className="sudoku-page">
       <Breadcrumb />
+      <h1>Sudoku</h1>
 
-      <div className="sudoku-topbar">
-        <button className="sudoku-back-btn"
-          onClick={() => { setDifficulty(null); setGrid(null); setGenerating(false) }}>
-          ← Back
-        </button>
-        <span className={`sudoku-badge sudoku-badge--${difficulty}`}>{diffLabel}</span>
-        <span className="sudoku-timer">{formatTime(seconds)}</span>
-      </div>
+      <DifficultySelector
+        value={difficulty}
+        onChange={(d) => { setDifficulty(d); startGame(d) }}
+      />
+      <HowToPlay steps={HOW_TO_PLAY} />
 
       {won && (
         <div className="sudoku-won-banner">
@@ -266,37 +253,44 @@ export default function Sudoku() {
         </div>
       )}
 
-      <div className="sudoku-grid" tabIndex={0} onFocus={() => {}}>
-        {grid.map((row, r) =>
-          row.map((val, c) => {
-            const isGiven  = given[r][c]
-            const isSel    = r === selRow && c === selCol
-            const conflict = !isGiven && hasConflict(grid, r, c)
-            const sameGroup = selRow >= 0 && !isSel && (
-              r === selRow || c === selCol ||
-              (Math.floor(r / 3) === Math.floor(selRow / 3) && Math.floor(c / 3) === Math.floor(selCol / 3))
-            )
-            const sameNum = selVal > 0 && val === selVal && !isSel
-
-            const cls = ['sudoku-cell',
-              isGiven    ? 'sudoku-cell--given'    : 'sudoku-cell--editable',
-              isSel      ? 'sudoku-cell--selected' : '',
-              conflict   ? 'sudoku-cell--error'    : '',
-              sameGroup  ? 'sudoku-cell--group'    : '',
-              sameNum    ? 'sudoku-cell--same-num' : '',
-              (c === 2 || c === 5) ? 'sudoku-cell--thick-right'  : '',
-              (r === 2 || r === 5) ? 'sudoku-cell--thick-bottom' : '',
-            ].filter(Boolean).join(' ')
-
-            return (
-              <div key={`${r}-${c}`} className={cls}
-                onClick={() => !won && setSelected([r, c])}>
-                {val !== 0 ? val : ''}
-              </div>
-            )
-          })
-        )}
+      <div className="sudoku-topbar">
+        <span className={`sudoku-badge sudoku-badge--${difficulty}`}>{difficulty.replace('-', ' ')}</span>
+        <span className="sudoku-timer">{formatTime(seconds)}</span>
       </div>
+
+      {grid && (
+        <div className="sudoku-grid" tabIndex={0} onFocus={() => {}}>
+          {grid.map((row, r) =>
+            row.map((val, c) => {
+              const isGiven  = given[r][c]
+              const isSel    = r === selRow && c === selCol
+              const conflict = !isGiven && hasConflict(grid, r, c)
+              const sameGroup = selRow >= 0 && !isSel && (
+                r === selRow || c === selCol ||
+                (Math.floor(r / 3) === Math.floor(selRow / 3) && Math.floor(c / 3) === Math.floor(selCol / 3))
+              )
+              const sameNum = selVal > 0 && val === selVal && !isSel
+
+              const cls = ['sudoku-cell',
+                isGiven    ? 'sudoku-cell--given'    : 'sudoku-cell--editable',
+                isSel      ? 'sudoku-cell--selected' : '',
+                conflict   ? 'sudoku-cell--error'    : '',
+                sameGroup  ? 'sudoku-cell--group'    : '',
+                sameNum    ? 'sudoku-cell--same-num' : '',
+                (c === 2 || c === 5) ? 'sudoku-cell--thick-right'  : '',
+                (r === 2 || r === 5) ? 'sudoku-cell--thick-bottom' : '',
+              ].filter(Boolean).join(' ')
+
+              return (
+                <div key={`${r}-${c}`} className={cls}
+                  onClick={() => !won && setSelected([r, c])}>
+                  {val !== 0 ? val : ''}
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
 
       <div className="sudoku-controls">
         <div className="sudoku-numpad">

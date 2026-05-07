@@ -35,6 +35,13 @@
   user-select: none;
 }
 
+.fq-hint {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4ade80;
+}
+
 .fq-prompt {
   margin: 0;
   color: #888;

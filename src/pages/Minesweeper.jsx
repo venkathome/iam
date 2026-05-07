@@ -1,11 +1,25 @@
 import { useState, useCallback } from 'react'
 import Breadcrumb from '../components/Breadcrumb'
+import DifficultySelector from '../components/DifficultySelector'
+import HowToPlay from '../components/HowToPlay'
+import '../components/DifficultySelector.css'
 import './Minesweeper.css'
 
-const DIFFICULTIES = {
-  easy:   { rows: 9,  cols: 9,  mines: 10, label: 'EASY'   },
-  medium: { rows: 16, cols: 16, mines: 40, label: 'MEDIUM' },
-  hard:   { rows: 16, cols: 30, mines: 99, label: 'HARD'   },
+const HOW_TO_PLAY = [
+  'Click any cell to reveal it.',
+  'Numbers tell you how many mines are touching that cell (including diagonals).',
+  'Right-click (or long-press on mobile) to plant a flag on a cell you think is a mine.',
+  "Reveal all safe cells without clicking a mine to win!",
+  'Tip: start by clicking somewhere in the middle — the first click is always safe.',
+]
+
+const DIFF_CONFIG = {
+  'very-easy': { rows: 8,  cols: 8,  mines: 5   },
+  'easy':      { rows: 9,  cols: 9,  mines: 10  },
+  'medium':    { rows: 16, cols: 16, mines: 40  },
+  'hard':      { rows: 16, cols: 30, mines: 99  },
+  'very-hard': { rows: 20, cols: 30, mines: 145 },
+  'ultimate':  { rows: 24, cols: 30, mines: 200 },
 }
 
 function buildBoard(rows, cols, mines, firstR, firstC) {
@@ -72,14 +86,14 @@ function flood(board, rows, cols, startIdx) {
 const ADJ_COLORS = ['', '#2196f3', '#4caf50', '#f44336', '#9c27b0', '#ff5722', '#00bcd4', '#e91e63', '#607d8b']
 
 export default function Minesweeper() {
-  const [diff, setDiff]       = useState('easy')
+  const [diff, setDiff]       = useState('medium')
   const [board, setBoard]     = useState(null)
   const [phase, setPhase]     = useState('idle') // idle | playing | won | lost
-  const [minesLeft, setMinesLeft] = useState(DIFFICULTIES.easy.mines)
+  const [minesLeft, setMinesLeft] = useState(DIFF_CONFIG['medium'].mines)
   const [time, setTime]       = useState(0)
   const [timerRef, setTimerRef] = useState(null)
 
-  const { rows, cols, mines } = DIFFICULTIES[diff]
+  const { rows, cols, mines } = DIFF_CONFIG[diff]
 
   function stopTimer(ref) {
     if (ref) clearInterval(ref)
@@ -96,7 +110,7 @@ export default function Minesweeper() {
     stopTimer(timerRef)
     setBoard(null)
     setPhase('idle')
-    setMinesLeft(DIFFICULTIES[diff].mines)
+    setMinesLeft(DIFF_CONFIG[diff].mines)
     setTime(0)
   }
 
@@ -105,7 +119,7 @@ export default function Minesweeper() {
     setDiff(d)
     setBoard(null)
     setPhase('idle')
-    setMinesLeft(DIFFICULTIES[d].mines)
+    setMinesLeft(DIFF_CONFIG[d].mines)
     setTime(0)
   }
 
@@ -166,16 +180,11 @@ export default function Minesweeper() {
     <div className="ms-page">
       <Breadcrumb />
       <h1 className="ms-title">MINESWEEPER</h1>
+      <HowToPlay steps={HOW_TO_PLAY} />
 
-      <div className="ms-toolbar">
-        {Object.entries(DIFFICULTIES).map(([key, d]) => (
-          <button
-            key={key}
-            className={`ms-diff-btn ${diff === key ? 'ms-diff-btn--active' : ''}`}
-            onClick={() => changeDiff(key)}
-          >{d.label}</button>
-        ))}
-      </div>
+      {phase === 'idle' && (
+        <DifficultySelector value={diff} onChange={(d) => { changeDiff(d) }} />
+      )}
 
       <div className="ms-statusbar">
         <span className="ms-stat">💣 {minesLeft}</span>

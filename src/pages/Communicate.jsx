@@ -134,6 +134,16 @@ export default function Communicate() {
     transition(() => setQIndex(i => (i - 1 + questions.length) % questions.length))
   }
 
+  useEffect(() => {
+    if (!questions.length) return
+    const onKey = (e) => {
+      if (e.key === 'ArrowRight') nextQuestion()
+      else if (e.key === 'ArrowLeft') prevQuestion()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   function shuffleNow() {
     fireSparkles()
     setQuestions(q => shuffle([...q]))

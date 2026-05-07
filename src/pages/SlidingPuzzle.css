@@ -49,8 +49,6 @@
 /* ── Board ───────────────────────────────────────────────── */
 .sp-board {
   position: relative;
-  width: 300px;
-  height: 300px;
   background: #111;
   border-radius: 12px;
   border: 2px solid #2e2e2e;
@@ -61,13 +59,10 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 96px;
-  height: 96px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
   font-weight: 900;
   color: #fff;
   cursor: pointer;
